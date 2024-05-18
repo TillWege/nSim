@@ -17,15 +17,12 @@ Vector2 points[numPoints] = { // Correct array declaration
 	{ SCREEN_WIDTH, SCREEN_HEIGHT }};
 
 
-struct Trail {
-	Vector2* data;
-	int size;
-	int top;
-
+class Trail {
+public:
 	Trail(int size) {
 		data = new Vector2[size];
 		this->size = size;
-		top = 0;
+		this->top = 0;
 	}
 
 	~Trail() {
@@ -33,20 +30,40 @@ struct Trail {
 	}
 
 	void push(Vector2 point) {
-		if(top < size) {
-			while (top < size) {
-				data[top] = point;
-				top++;
-			}
+		if(this->top < this->size) {
+			this->data[this->top] = point;
+			this->top++;
 		} else {
-			memcpy(&data[0], &data[1], (size - 1) * sizeof(Vector2));
-			data[top - 1] = point;
+			memcpy(&this->data[0], &this->data[1], (this->size - 1) * sizeof(Vector2));
+			this->data[top - 1] = point;
 		}
 	}
 
+	Vector2* get() {
+		return this->data;
+	}
+
+	int getTop() {
+		return this->top;
+	}
+
+	Vector2 getPoint(int index) {
+		return this->data[index];
+	}
+
+	int getSize() {
+		return this->size;
+	}
+
+
+private:
+	Vector2* data;
+	int size;
+	int top;
+
 };
 
-Trail earthTrail = Trail(100);
+Trail* earthTrail = NULL;
 
 int main(void)
 {
@@ -57,6 +74,8 @@ int main(void)
 	Texture2D texture = LoadTexture(ASSETS_PATH "/test.png"); // Check README.md for how this works
 
 	rlImGuiSetup(true);
+
+	earthTrail = new Trail(100);
 
 	while (!WindowShouldClose())
 	{
@@ -84,17 +103,42 @@ int main(void)
 		float earth_x = SCREEN_WIDTH / 2 + 200 * cos(angle);
 		float earth_y = SCREEN_HEIGHT / 2 + 200 * sin(angle);
 
-		earthTrail.push({ earth_x, earth_y });
+		earthTrail->push({ earth_x, earth_y });
 
-		DrawSplineLinear(earthTrail.data, earthTrail.size, 2.0f, SKYBLUE);
+		DrawSplineLinear(earthTrail->get(), earthTrail->getTop(), 2.0f, SKYBLUE);
 
 		DrawCircle(earth_x, earth_y, 20, BLUE);
 
-		ImGui::Begin("TrailDebug");
+
+		ImGui::Begin("Target Debug", NULL, ImGuiWindowFlags_AlwaysAutoResize);
 		{
-			for (int i = 0; i < earthTrail.size; i++) {
-				ImGui::Text("Trail[%d]: (%f, %f)", i, earthTrail.data[i].x, earthTrail.data[i].y);
+			ImGui::Text("Currently Selected: Earth");
+
+			int trailSize = earthTrail->getSize();
+			ImGui::SliderInt("Trail Size", &trailSize, 1, 100);
+
+			if (trailSize != earthTrail->getSize()) {
+				delete earthTrail;
+				earthTrail = new Trail(trailSize);
 			}
+
+			if(ImGui::Button("Reset Trail")) {
+				delete earthTrail;
+				earthTrail = new Trail(100);
+			}
+
+
+			ImGui::Text("Earth Trail");
+
+			ImGui::BeginChild("Scrolling", {0, 300}, ImGuiChildFlags_Border);
+
+			for (int i = 0; i < earthTrail->getTop(); i++) {
+				auto point = earthTrail->getPoint(i);
+				ImGui::Text("Point %d: (%f, %f)", i, point.x, point.y);
+			}
+
+			ImGui::EndChild();
+
 		}
 		ImGui::End();
 
