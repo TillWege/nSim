@@ -2,3 +2,11 @@ build
 .vscode
 code/nSim
 code/nSim.exe
+/.idea/.gitignore
+/.idea/discord.xml
+/code/imgui.ini
+/imgui.ini
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/nSim.iml
+/.idea/vcs.xml
