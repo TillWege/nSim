@@ -2,10 +2,7 @@
 #include "imgui.h"
 #include "rlImGui.h" //// include the API header
 #include <cmath>
-#include <iostream>
-#include <stack>
 #include <string>
-#include <utility>
 #include "vector"
 #define SCREEN_WIDTH (1600)
 #define SCREEN_HEIGHT (900)
@@ -56,8 +53,8 @@ void updateCursor()
 struct GraphicsDebugger
 {
 	bool showWireframe = false;
-	bool showGrid = false;
-	int gridSize = 10;
+	bool showGrid = true;
+	int gridSize = 20;
 	int maxFPS = 100;
 };
 
@@ -161,7 +158,7 @@ void BodyDebuggerUI(Body& body)
 		for (size_t i = 0; i < body.trailCount(); i++)
 		{
 			Vector3& point = body.trail.data[i];
-			ImGui::Text("%d: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
+			ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
 		}
 
 		ImGui::EndChild();
@@ -200,7 +197,7 @@ int main(void)
 
 	while (!WindowShouldClose())
 	{
-		updateCursor();
+//		updateCursor();
 
 
 		BeginDrawing();
@@ -227,8 +224,7 @@ int main(void)
 
 		BeginMode3D(camera);
 
-		if (cursorState == Locked)
-			UpdateCamera(&camera, CAMERA_FREE);
+		UpdateCamera(&camera, CAMERA_ORBITAL);
 
 
 		if (graphicsDebugger.showGrid)
