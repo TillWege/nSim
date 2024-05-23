@@ -20,6 +20,7 @@ FetchContent_MakeAvailable(raylib)
 file(GLOB PROJECT_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/external/imgui/*.h" "${CMAKE_CURRENT_LIST_DIR}/external/imgui/*.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/external/imgui/misc/cpp/*.h" "${CMAKE_CURRENT_LIST_DIR}/external/imgui/misc/cpp/*.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/external/rlImGui/*.h" "${CMAKE_CURRENT_LIST_DIR}/external/rlImGui/*.cpp"
 )
 
@@ -35,6 +36,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)  # Enable C++17 feat
 
 include_directories("${CMAKE_CURRENT_LIST_DIR}/external/imgui"
                     "${CMAKE_CURRENT_LIST_DIR}/external/imgui/backends"
+                    "${CMAKE_CURRENT_LIST_DIR}/external/imgui/misc/cpp"
                     "${CMAKE_CURRENT_LIST_DIR}/external/rlImGui")
 
 # Setting ASSETS_PATH

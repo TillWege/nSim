@@ -1,9 +1,12 @@
 #include "raylib.h"
 #include "imgui.h"
+#include "imgui_stdlib.h"
 #include "rlImGui.h" //// include the API header
 #include <cmath>
 #include <string>
 #include "vector"
+#include "rlImGuiColors.h"
+
 #define SCREEN_WIDTH (1600)
 #define SCREEN_HEIGHT (900)
 
@@ -168,9 +171,49 @@ void BodyDebuggerUI(Body& body)
 
 std::vector<Body> bodies;
 
+struct bodySettings
+{
+    std::string name;
+    float orbitHeight;
+    float radius;
+    float mass;
+    ImVec4 color = {1, 1, 1, 1};
+};
+
+bodySettings tempBody;
+
+void NewBodyDebuggerUI()
+{
+
+    ImGui::SetNextWindowSize({300, 180});
+    ImGui::Begin("New Body");
+
+    ImGui::InputText("Name", &tempBody.name);
+    ImGui::InputFloat("Orbit Height", &tempBody.orbitHeight);
+    ImGui::InputFloat("Radius", &tempBody.radius);
+    ImGui::InputFloat("Mass", &tempBody.mass);
+    ImGui::ColorEdit4("Color", &tempBody.color.x);
+
+    if (ImGui::Button("Create"))
+    {
+        Body newBody = {
+            tempBody.name,
+            tempBody.orbitHeight,
+            0.0f,
+            tempBody.radius,
+            tempBody.mass,
+            rlImGuiColors::Convert(tempBody.color),
+        };
+        tempBody = {};
+        bodies.push_back(newBody);
+    }
+    ImGui::End();
+}
+
+
 int main(void)
 {
-	SetConfigFlags(FLAG_MSAA_4X_HINT);
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
 	SetTargetFPS(60);
 
@@ -197,9 +240,6 @@ int main(void)
 
 	while (!WindowShouldClose())
 	{
-//		updateCursor();
-
-
 		BeginDrawing();
 		rlImGuiBegin();
 		ClearBackground(BLACK);
@@ -238,6 +278,7 @@ int main(void)
 
 		EndMode3D();
 		GraphicsDebuggerUI();
+        NewBodyDebuggerUI();
 
 		rlImGuiEnd();
 		EndDrawing();
