@@ -276,6 +276,15 @@ int main(void)
 			BodyDebuggerUI(body);
 		}
 
+
+        if(IsMouseButtonPressed(0))
+        {
+            auto pos = GetMouseRay(GetMousePosition(), camera);
+            TraceLog(LOG_INFO, "Mouse ray POS: %f, %f, %f", pos.position.x, pos.position.y, pos.position.z);
+            TraceLog(LOG_INFO, "Mouse ray DIR: %f, %f, %f", pos.direction.x, pos.direction.y, pos.direction.z);
+
+        }
+
 		EndMode3D();
 		GraphicsDebuggerUI();
         NewBodyDebuggerUI();
