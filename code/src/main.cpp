@@ -14,165 +14,214 @@
 
 const int numPoints = 3;      // Define the number of points
 Vector2 points[numPoints] = { // Correct array declaration
-	{ 0, 0 },
-	{ 0, SCREEN_HEIGHT },
-	{ SCREEN_WIDTH, SCREEN_HEIGHT }};
+        {0, 0},
+        {0,            SCREEN_HEIGHT},
+        {SCREEN_WIDTH, SCREEN_HEIGHT}};
 
-enum CursorState
-{
-	Uninitialized, Locked, Unlocked
+enum CursorState {
+    Uninitialized, Locked, Unlocked
 };
 
 CursorState cursorState = Uninitialized;
 
-void updateCursor()
-{
-	if (!IsCursorHidden() && cursorState == Locked)
-	{
-		DisableCursor();
-	}
+void updateCursor() {
+    if (!IsCursorHidden() && cursorState == Locked) {
+        DisableCursor();
+    }
 
-	if (cursorState == Uninitialized)
-	{
-		DisableCursor();
-		cursorState = Locked;
-	}
+    if (cursorState == Uninitialized) {
+        DisableCursor();
+        cursorState = Locked;
+    }
 
-	if (IsKeyPressed(KEY_F1))
-	{
-		if (cursorState == Locked)
-		{
-			EnableCursor();
-			cursorState = Unlocked;
-		}
-		else
-		{
-			DisableCursor();
-			cursorState = Locked;
-		}
-	}
+    if (IsKeyPressed(KEY_F1)) {
+        if (cursorState == Locked) {
+            EnableCursor();
+            cursorState = Unlocked;
+        } else {
+            DisableCursor();
+            cursorState = Locked;
+        }
+    }
 }
 
-struct GraphicsDebugger
-{
-	bool showWireframe = false;
-	bool showGrid = true;
-	int gridSize = 20;
-	int maxFPS = 100;
+struct GraphicsDebugger {
+    bool showWireframe = false;
+    bool showGrid = true;
+    int gridSize = 20;
+    int maxFPS = 100;
 };
 
 GraphicsDebugger graphicsDebugger;
 
-void GraphicsDebuggerUI()
-{
-	ImGui::Begin("Graphics Debugger", NULL, ImGuiWindowFlags_AlwaysAutoResize);
-	{
+void GraphicsDebuggerUI() {
+    ImGui::Begin("Graphics Debugger", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+    {
 
-		ImGui::Checkbox("Show Wireframe", &graphicsDebugger.showWireframe);
-		ImGui::Checkbox("Show Grid", &graphicsDebugger.showGrid);
-		ImGui::SliderInt("Grid Size", &graphicsDebugger.gridSize, 1, 100);
-		ImGui::Separator();
-		ImGui::Text("Fps: %d", GetFPS());
-		ImGui::Text("Frame Time: %f", GetFrameTime());
-		int prevMaxFPS = graphicsDebugger.maxFPS;
-		ImGui::SliderInt("Max FPS", &graphicsDebugger.maxFPS, 1, 1000);
-		if (prevMaxFPS != graphicsDebugger.maxFPS)
-		{
-			SetTargetFPS(graphicsDebugger.maxFPS);
-		}
+        ImGui::Checkbox("Show Wireframe", &graphicsDebugger.showWireframe);
+        ImGui::Checkbox("Show Grid", &graphicsDebugger.showGrid);
+        ImGui::SliderInt("Grid Size", &graphicsDebugger.gridSize, 1, 100);
+        ImGui::Separator();
+        ImGui::Text("Fps: %d", GetFPS());
+        ImGui::Text("Frame Time: %f", GetFrameTime());
+        int prevMaxFPS = graphicsDebugger.maxFPS;
+        ImGui::SliderInt("Max FPS", &graphicsDebugger.maxFPS, 1, 1000);
+        if (prevMaxFPS != graphicsDebugger.maxFPS) {
+            SetTargetFPS(graphicsDebugger.maxFPS);
+        }
 
-	}
-	ImGui::End();
+    }
+    ImGui::End();
 }
 
-struct Body
-{
-	std::string name;
-	float orbitHeight;
-	float angle;
-	float radius;
-	float mass;
-	Color color;
-	struct
-	{
-		std::vector<Vector3> data;
-		size_t maxCount = 100;
-	} trail;
+struct Body {
+    std::string name;
+    float orbitHeight;
+    float angle;
+    float radius;
+    float mass;
+    Color color;
+    struct {
+        std::vector<Vector3> data;
+        size_t maxCount = 100;
+    } trail;
 
-	void appendTrail(Vector3 point)
-	{
-		if (trail.data.size() >= trail.maxCount)
-		{
-			trail.data.erase(trail.data.begin());
-		}
-		trail.data.push_back(point);
-	}
+    void appendTrail(Vector3 point) {
+        if (trail.data.size() >= trail.maxCount) {
+            trail.data.erase(trail.data.begin());
+        }
+        trail.data.push_back(point);
+    }
 
-	void updateTrailSize(size_t size)
-	{
-		trail.maxCount = size;
-		trail.data.clear();
-		trail.data.reserve(size);
-	}
+    void updateTrailSize(size_t size) {
+        trail.maxCount = size;
+        trail.data.clear();
+        trail.data.reserve(size);
+    }
 
-	size_t trailCount()
-	{
-		return trail.data.size();
-	}
+    size_t trailCount() {
+        return trail.data.size();
+    }
 };
 
-void DrawBody(Body& body)
-{
-	Vector3 pos = { 0, 0, 0 };
-	if (body.orbitHeight > 0)
-	{
-		pos.x = body.orbitHeight * cos(body.angle);
-		pos.z = body.orbitHeight * sin(body.angle);
-	}
 
-	body.appendTrail(pos);
+Vector3 GetBodyPosition(Body &body) {
+    Vector3 pos = {0, 0, 0};
+    if (body.orbitHeight > 0) {
+        pos.x = body.orbitHeight * cos(body.angle);
+        pos.z = body.orbitHeight * sin(body.angle);
+    }
+    return pos;
+}
 
-	if (graphicsDebugger.showWireframe)
-		DrawSphereWires(pos, body.radius, 10, 10, body.color);
-	else
-		DrawSphere(pos, body.radius, body.color);
+void DrawBody(Body &body) {
+    Vector3 pos = GetBodyPosition(body);
 
-	for (size_t i = 1; i < body.trailCount(); i++)
-	{
-		DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
-	}
+    body.appendTrail(pos);
+
+    if (graphicsDebugger.showWireframe)
+        DrawSphereWires(pos, body.radius, 10, 10, body.color);
+    else
+        DrawSphereEx(pos, body.radius, 32, 32, body.color);
+
+    for (size_t i = 1; i < body.trailCount(); i++) {
+        DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
+    }
 
 }
 
-void BodyDebuggerUI(Body& body)
-{
+void BodyDebuggerUI(Body &body) {
 
-	std::string windowName = "Body Debugger: " + body.name;
+    std::string windowName = "Body Debugger: " + body.name;
 
-	ImGui::Begin(windowName.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize);
-	{
-		ImGui::Text("Orbit Height: %f", body.orbitHeight);
-		ImGui::Text("Angle: %f°", body.angle);
-		ImGui::Text("Radius: %f", body.radius);
-		ImGui::Text("Mass: %f", body.mass);
+    ImGui::Begin(windowName.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        ImGui::Text("Orbit Height: %f", body.orbitHeight);
+        ImGui::Text("Angle: %f°", body.angle);
+        ImGui::Text("Radius: %f", body.radius);
+        ImGui::Text("Mass: %f", body.mass);
 
-		ImGui::BeginChild("Trail", { 300, 300 });
+        ImGui::BeginChild("Trail", {300, 300});
 
-		for (size_t i = 0; i < body.trailCount(); i++)
-		{
-			Vector3& point = body.trail.data[i];
-			ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
-		}
+        for (size_t i = 0; i < body.trailCount(); i++) {
+            Vector3 &point = body.trail.data[i];
+            ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
+        }
 
-		ImGui::EndChild();
-	}
-	ImGui::End();
+        ImGui::EndChild();
+    }
+    ImGui::End();
 }
 
 std::vector<Body> bodies;
 
-struct bodySettings
-{
+bool testRayHit(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, float sphereRadius) {
+    // 1. Vector from camera position to sphere center
+    Vector3 oc = {spherePos.x - cameraPos.x, spherePos.y - cameraPos.y, spherePos.z - cameraPos.z};
+
+    // 2. Calculate projections
+    float ocSq = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z;
+    float a = cameraDir.x * cameraDir.x + cameraDir.y * cameraDir.y + cameraDir.z * cameraDir.z;
+    float b = 2.0f * (oc.x * cameraDir.x + oc.y * cameraDir.y + oc.z * cameraDir.z);
+
+    // 3. Discriminant
+    float discriminant = b * b - 4.0f * a * (ocSq - sphereRadius * sphereRadius);
+
+    // 4. Check for solutions (intersections)
+    if (discriminant < 0.0f) {
+        // No intersection
+        return false;
+    } else {
+        // One or two intersections (we just need to know if there is AT LEAST one)
+        return true;
+    }
+}
+
+float distanceToSphere(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, float sphereRadius) {
+    // 1. Vector from camera position to sphere center
+    Vector3 oc = {spherePos.x - cameraPos.x, spherePos.y - cameraPos.y, spherePos.z - cameraPos.z};
+
+    // 2. Calculate projections and distance to sphere center
+    float ocSq = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z;
+    float a = cameraDir.x * cameraDir.x + cameraDir.y * cameraDir.y + cameraDir.z * cameraDir.z;
+    float b = 2.0f * (oc.x * cameraDir.x + oc.y * cameraDir.y + oc.z * cameraDir.z);
+
+    // 3. Discriminant (same as in testRayHit)
+    float discriminant = b * b - 4.0f * a * (ocSq - sphereRadius * sphereRadius);
+
+    // 4. Check for solutions (intersections)
+    if (discriminant < 0.0f) {
+        // No intersection, return distance to sphere center minus radius
+        return std::sqrt(ocSq) - sphereRadius;
+    } else {
+        // Intersection exists. Calculate distance to closest intersection
+        float t1 = (-b - std::sqrt(discriminant)) / (2.0f * a);
+        float t2 = (-b + std::sqrt(discriminant)) / (2.0f * a);
+
+        // Ensure t is positive (intersection in front of camera)
+        float t = (t1 > 0.0f) ? t1 : t2;
+        if (t < 0.0f) {
+            // Both intersections behind camera, return distance to sphere center minus radius
+            return std::sqrt(ocSq) - sphereRadius;
+        }
+
+        // Calculate intersection point and distance to it
+        Vector3 intersectionPoint = {
+                cameraPos.x + t * cameraDir.x,
+                cameraPos.y + t * cameraDir.y,
+                cameraPos.z + t * cameraDir.z
+        };
+        float distance = std::sqrt(
+                (intersectionPoint.x - cameraPos.x) * (intersectionPoint.x - cameraPos.x) +
+                (intersectionPoint.y - cameraPos.y) * (intersectionPoint.y - cameraPos.y) +
+                (intersectionPoint.z - cameraPos.z) * (intersectionPoint.z - cameraPos.z)
+        );
+
+        return distance;
+    }
+}
+
+struct bodySettings {
     std::string name;
     float orbitHeight;
     float radius;
@@ -182,8 +231,7 @@ struct bodySettings
 
 bodySettings tempBody;
 
-void NewBodyDebuggerUI()
-{
+void NewBodyDebuggerUI() {
 
     ImGui::SetNextWindowSize({300, 180});
     ImGui::Begin("New Body");
@@ -194,15 +242,14 @@ void NewBodyDebuggerUI()
     ImGui::InputFloat("Mass", &tempBody.mass);
     ImGui::ColorEdit4("Color", &tempBody.color.x);
 
-    if (ImGui::Button("Create"))
-    {
+    if (ImGui::Button("Create")) {
         Body newBody = {
-            tempBody.name,
-            tempBody.orbitHeight,
-            0.0f,
-            tempBody.radius,
-            tempBody.mass,
-            rlImGuiColors::Convert(tempBody.color),
+                tempBody.name,
+                tempBody.orbitHeight,
+                0.0f,
+                tempBody.radius,
+                tempBody.mass,
+                rlImGuiColors::Convert(tempBody.color),
         };
         tempBody = {};
         bodies.push_back(newBody);
@@ -210,93 +257,153 @@ void NewBodyDebuggerUI()
     ImGui::End();
 }
 
+struct CameraSettings {
+    Camera camera = {
+            .position = {0.0f, 10.0f, 10.0f},
+            .target = {0.0f, 0.0f, 0.0f},
+            .up = {0.0f, 1.0f, 0.0f},
+            .fovy = 45.0f,
+            .projection = CAMERA_PERSPECTIVE,
+    };
+    int cameraMode = CAMERA_ORBITAL;
+};
 
-int main(void)
-{
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
-	SetTargetFPS(60);
+CameraSettings cameraSettings;
 
-	//Texture2D texture = LoadTexture(ASSETS_PATH "/test.png"); // Check README.md for how this works
-	rlImGuiSetup(true);
+void CameraSettingsDebuggerUI() {
+    ImGui::Begin("Camera Settings", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        ImGui::Text("Camera Mode");
+        if (ImGui::RadioButton("Orbital", &cameraSettings.cameraMode, CAMERA_ORBITAL)) {
+            cameraSettings.cameraMode = CAMERA_ORBITAL;
+            cameraSettings.camera.target = {0.0f, 0.0f, 0.0f};
+        }
 
+        if (ImGui::RadioButton("First Person", &cameraSettings.cameraMode, CAMERA_FIRST_PERSON))
+            cameraSettings.cameraMode = CAMERA_FIRST_PERSON;
 
-	Camera camera = { 0 };
-	camera.projection = CAMERA_PERSPECTIVE;
-	camera.fovy = 45.0f;
-	camera.position = { 0.0f, 10.0f, 10.0f };
-	camera.target = { 0.0f, 0.0f, 0.0f };
-	camera.up = { 0.0f, 1.0f, 0.0f };
+        if (ImGui::RadioButton("Free", &cameraSettings.cameraMode, CAMERA_FREE))
+            cameraSettings.cameraMode = CAMERA_FREE;
 
-	SetExitKey(0);
+        ImGui::Separator();
+        ImGui::Begin("Camera Settings");
+        ImGui::InputFloat3("Position", &cameraSettings.camera.position.x);
+        ImGui::InputFloat3("Target", &cameraSettings.camera.target.x);
+        ImGui::InputFloat3("Up", &cameraSettings.camera.up.x);
+        ImGui::SliderFloat("Fovy", &cameraSettings.camera.fovy, 30.0f, 90.0f);
 
-	SetWindowFocused();
+        ImGui::End();
 
-	Body sun = { "Sun", 0.0f, 0.0f, 2.0f, 10.0f, YELLOW};
-	bodies.push_back(sun);
+    }
+    ImGui::End();
+}
 
-	Body earth = { "Earth", 7.0f, 0.0f, 0.5f, 0.1f, BLUE};
-	bodies.push_back(earth);
+struct SimulationSettings {
+    float timeScale = 1.0f;
+    bool paused = false;
+};
 
-	while (!WindowShouldClose())
-	{
-		BeginDrawing();
-		rlImGuiBegin();
-		ClearBackground(BLACK);
+SimulationSettings simulationSettings;
 
-		const char* text = "Planet Sim";
-		const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
+void SimulationSettingsDebuggerUI() {
+    ImGui::Begin("Simulation Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        ImGui::SliderFloat("Time Scale", &simulationSettings.timeScale, 0.0f, 10.0f);
+        ImGui::Checkbox("Paused", &simulationSettings.paused);
+    }
+    ImGui::End();
+}
 
-		DrawText(text,
-			SCREEN_WIDTH / 2 - text_size.x / 2,
-			30,
-			20,
-			RAYWHITE
-		);
+int main(void) {
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+    SetTargetFPS(60);
 
-		for (Body& body : bodies)
-		{
-			body.angle += GetFrameTime() * 0.5f;
-			BodyDebuggerUI(body);
-//			earthTrail->push({body.orbitHeight * cos(body.angle), 0, body.orbitHeight * sin(body.angle)});
-		}
-
-
-		BeginMode3D(camera);
-
-		UpdateCamera(&camera, CAMERA_ORBITAL);
-
-
-		if (graphicsDebugger.showGrid)
-			DrawGrid(graphicsDebugger.gridSize, 1.0f);
-
-		for (Body& body : bodies)
-		{
-			DrawBody(body);
-			BodyDebuggerUI(body);
-		}
+    //Texture2D texture = LoadTexture(ASSETS_PATH "/test.png"); // Check README.md for how this works
+    rlImGuiSetup(true);
 
 
-        if(IsMouseButtonPressed(0))
-        {
-            auto pos = GetMouseRay(GetMousePosition(), camera);
+    SetExitKey(0);
+
+    SetWindowFocused();
+
+    Body sun = {"Sun", 0.0f, 0.0f, 2.0f, 10.0f, YELLOW};
+    bodies.push_back(sun);
+
+    Body earth = {"Earth", 7.0f, 0.0f, 0.5f, 0.1f, BLUE};
+    bodies.push_back(earth);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        rlImGuiBegin();
+        ClearBackground(BLACK);
+
+        const char *text = "Planet Sim";
+        const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
+
+        DrawText(text,
+                 SCREEN_WIDTH / 2 - text_size.x / 2,
+                 30,
+                 20,
+                 RAYWHITE
+        );
+
+        if (!simulationSettings.paused) {
+            for (Body &body: bodies) {
+                body.angle += GetFrameTime() * 0.5f * simulationSettings.timeScale;
+                BodyDebuggerUI(body);
+            }
+        }
+
+
+        BeginMode3D(cameraSettings.camera);
+
+        if (!simulationSettings.paused)
+            UpdateCamera(&cameraSettings.camera, cameraSettings.cameraMode);
+
+
+        if (graphicsDebugger.showGrid)
+            DrawGrid(graphicsDebugger.gridSize, 1.0f);
+
+        for (Body &body: bodies) {
+            DrawBody(body);
+            BodyDebuggerUI(body);
+        }
+
+
+        if (IsMouseButtonPressed(0)) {
+            auto pos = GetMouseRay(GetMousePosition(), cameraSettings.camera);
             TraceLog(LOG_INFO, "Mouse ray POS: %f, %f, %f", pos.position.x, pos.position.y, pos.position.z);
             TraceLog(LOG_INFO, "Mouse ray DIR: %f, %f, %f", pos.direction.x, pos.direction.y, pos.direction.z);
 
+            std::vector<std::tuple<Body, float>> hitBodies;
+            for (Body &body: bodies) {
+                if (testRayHit(pos.position, pos.direction, GetBodyPosition(body), body.radius)) {
+                    float dist = distanceToSphere(pos.position, pos.direction, GetBodyPosition(body), body.radius);
+                    hitBodies.emplace_back(body, dist);
+                }
+            }
+
+            for (auto &[body, dist]: hitBodies) {
+                TraceLog(LOG_INFO, "Hit body: %s, distance: %f", body.name.c_str(), dist);
+            }
+
         }
 
-		EndMode3D();
-		GraphicsDebuggerUI();
+        EndMode3D();
+        GraphicsDebuggerUI();
         NewBodyDebuggerUI();
+        CameraSettingsDebuggerUI();
+        SimulationSettingsDebuggerUI();
 
-		rlImGuiEnd();
-		EndDrawing();
-	}
+        rlImGuiEnd();
+        EndDrawing();
+    }
 
-	rlImGuiShutdown();
-	CloseWindow();
+    rlImGuiShutdown();
+    CloseWindow();
 
-	return 0;
+    return 0;
 }
 
 
