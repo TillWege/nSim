@@ -6,17 +6,11 @@
 #include <string>
 #include "vector"
 #include "rlImGuiColors.h"
-
-#define SCREEN_WIDTH (1600)
-#define SCREEN_HEIGHT (900)
+#include <thread>
 
 #define WINDOW_TITLE "nSim"
+#define USE_SPINLOCK_TIMER true
 
-const int numPoints = 3;      // Define the number of points
-Vector2 points[numPoints] = { // Correct array declaration
-        {0, 0},
-        {0,            SCREEN_HEIGHT},
-        {SCREEN_WIDTH, SCREEN_HEIGHT}};
 
 enum CursorState {
     Uninitialized, Locked, Unlocked
@@ -116,8 +110,6 @@ Vector3 GetBodyPosition(Body &body) {
 
 void DrawBody(Body &body) {
     Vector3 pos = GetBodyPosition(body);
-
-    body.appendTrail(pos);
 
     if (graphicsDebugger.showWireframe)
         DrawSphereWires(pos, body.radius, 10, 10, body.color);
@@ -300,6 +292,7 @@ void CameraSettingsDebuggerUI() {
 
 struct SimulationSettings {
     float timeScale = 1.0f;
+    float timeStep = 1.0 / 60.0f;
     bool paused = false;
 };
 
@@ -309,19 +302,62 @@ void SimulationSettingsDebuggerUI() {
     ImGui::Begin("Simulation Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::SliderFloat("Time Scale", &simulationSettings.timeScale, 0.0f, 10.0f);
+        ImGui::SliderFloat("Time Step", &simulationSettings.timeStep, 0.001f, 1.0f);
         ImGui::Checkbox("Paused", &simulationSettings.paused);
     }
     ImGui::End();
 }
 
+bool simRunning = true;
+
+void simulate()
+{
+    while (simRunning)
+    {
+        auto startTime = std::chrono::high_resolution_clock::now();
+        if (!simulationSettings.paused) {
+            for (Body &body: bodies) {
+                body.angle += 0.5f * simulationSettings.timeScale * simulationSettings.timeStep;
+
+                Vector3 pos = GetBodyPosition(body);
+                body.appendTrail(pos);
+            }
+        }
+
+        auto endTime = std::chrono::high_resolution_clock::now();
+
+        auto sim_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+        TraceLog(LOG_INFO, "Simulation time: %d ns", sim_duration_ns);
+
+        auto timestep_ns = static_cast<long long>(simulationSettings.timeStep * 1000000000.0f / simulationSettings.timeScale);
+
+        if (sim_duration_ns < timestep_ns)
+        {
+            auto delta_timestep = timestep_ns - sim_duration_ns;
+            auto sleepDur = std::chrono::nanoseconds(delta_timestep);
+            if(USE_SPINLOCK_TIMER)
+                while (std::chrono::high_resolution_clock::now() - startTime < sleepDur);
+            else
+                std::this_thread::sleep_for(sleepDur);
+        }
+
+        auto endTime2 = std::chrono::high_resolution_clock::now();
+        auto duration_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - startTime).count();
+        TraceLog(LOG_INFO, "Total time: %d ns", duration_ns2);
+
+        auto error = duration_ns2 - timestep_ns;
+        TraceLog(LOG_INFO, "Δt: %d ns", error);
+    }
+}
+
 int main(void) {
-    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+    SetConfigFlags(FLAG_MSAA_4X_HINT  | FLAG_WINDOW_RESIZABLE);
+    InitWindow(1600, 900, WINDOW_TITLE);
     SetTargetFPS(60);
 
-    //Texture2D texture = LoadTexture(ASSETS_PATH "/test.png"); // Check README.md for how this works
-    rlImGuiSetup(true);
 
+
+    rlImGuiSetup(true);
 
     SetExitKey(0);
 
@@ -333,6 +369,10 @@ int main(void) {
     Body earth = {"Earth", 7.0f, 0.0f, 0.5f, 0.1f, BLUE};
     bodies.push_back(earth);
 
+    std::thread simThread;
+
+    simThread = std::thread(simulate);
+
     while (!WindowShouldClose()) {
         BeginDrawing();
         rlImGuiBegin();
@@ -342,19 +382,11 @@ int main(void) {
         const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
 
         DrawText(text,
-                 SCREEN_WIDTH / 2 - text_size.x / 2,
+                 GetScreenWidth() / 2 - text_size.x / 2,
                  30,
                  20,
                  RAYWHITE
         );
-
-        if (!simulationSettings.paused) {
-            for (Body &body: bodies) {
-                body.angle += GetFrameTime() * 0.5f * simulationSettings.timeScale;
-                BodyDebuggerUI(body);
-            }
-        }
-
 
         BeginMode3D(cameraSettings.camera);
 
@@ -399,6 +431,9 @@ int main(void) {
         rlImGuiEnd();
         EndDrawing();
     }
+
+    simRunning = false;
+    simThread.join();
 
     rlImGuiShutdown();
     CloseWindow();
