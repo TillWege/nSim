@@ -215,18 +215,18 @@ float distanceToSphere(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, 
 
 struct bodySettings {
     std::string name;
-    float orbitHeight;
-    float radius;
-    float mass;
+    float orbitHeight = 0.0f;
+    float radius = 1.0f;
+    float mass = 1.0f;
     ImVec4 color = {1, 1, 1, 1};
 };
-
-bodySettings tempBody;
 
 void NewBodyDebuggerUI() {
 
     ImGui::SetNextWindowSize({300, 180});
     ImGui::Begin("New Body");
+
+	static bodySettings tempBody;
 
     ImGui::InputText("Name", &tempBody.name);
     ImGui::InputFloat("Orbit Height", &tempBody.orbitHeight);
@@ -263,7 +263,7 @@ struct CameraSettings {
 CameraSettings cameraSettings;
 
 void CameraSettingsDebuggerUI() {
-    ImGui::Begin("Camera Settings", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Camera Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("Camera Mode");
         if (ImGui::RadioButton("Orbital", &cameraSettings.cameraMode, CAMERA_ORBITAL)) {
@@ -290,8 +290,18 @@ void CameraSettingsDebuggerUI() {
     ImGui::End();
 }
 
+struct PerformanceStats {
+	int fps;
+	float renderFrameTime;
+	long long simTickTime;
+	long long targetSimTickTime;
+	long long lastDeltaTime;
+};
+
+PerformanceStats performanceStats;
+
 struct SimulationSettings {
-    float timeScale = 1.0f;
+    float tickRate = 1.0f;
     float timeStep = 1.0 / 60.0f;
     bool paused = false;
 };
@@ -299,12 +309,42 @@ struct SimulationSettings {
 SimulationSettings simulationSettings;
 
 void SimulationSettingsDebuggerUI() {
+
+	performanceStats.fps = GetFPS();
+	performanceStats.renderFrameTime = GetFrameTime();
+
     ImGui::Begin("Simulation Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
-        ImGui::SliderFloat("Time Scale", &simulationSettings.timeScale, 0.0f, 10.0f);
+        ImGui::SliderFloat("Tickrate", &simulationSettings.tickRate, 0.0f, 10.0f);
         ImGui::SliderFloat("Time Step", &simulationSettings.timeStep, 0.001f, 1.0f);
         ImGui::Checkbox("Paused", &simulationSettings.paused);
-    }
+
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
+		ImGui::Text("Simulation Running");
+		ImGui::PopStyleColor();
+
+		static bool showRenderingStats = false;
+		ImGui::Checkbox("Show Rendering Stats", &showRenderingStats);
+
+		if (showRenderingStats) {
+			ImGui::Text("FPS: %d", performanceStats.fps);
+			ImGui::Text("Last render Frame Time: %f", performanceStats.renderFrameTime);
+			ImGui::Text("Target sim tick time: %lld", performanceStats.targetSimTickTime);
+
+			if(performanceStats.simTickTime > performanceStats.targetSimTickTime)
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,0,0,255));
+			else if(performanceStats.simTickTime > performanceStats.targetSimTickTime / 2)
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,0,255));
+			else
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
+			{
+				ImGui::Text("Last sim tick time: %lld", performanceStats.simTickTime);
+			}
+			ImGui::PopStyleColor();
+
+			ImGui::Text("Last delta time: %lld", performanceStats.lastDeltaTime);
+		}
+	}
     ImGui::End();
 }
 
@@ -317,7 +357,7 @@ void simulate()
         auto startTime = std::chrono::high_resolution_clock::now();
         if (!simulationSettings.paused) {
             for (Body &body: bodies) {
-                body.angle += 0.5f * simulationSettings.timeScale * simulationSettings.timeStep;
+                body.angle += 0.5f * simulationSettings.tickRate * simulationSettings.timeStep;
 
                 Vector3 pos = GetBodyPosition(body);
                 body.appendTrail(pos);
@@ -327,9 +367,11 @@ void simulate()
         auto endTime = std::chrono::high_resolution_clock::now();
 
         auto sim_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-        TraceLog(LOG_INFO, "Simulation time: %d ns", sim_duration_ns);
 
-        auto timestep_ns = static_cast<long long>(simulationSettings.timeStep * 1000000000.0f / simulationSettings.timeScale);
+        auto timestep_ns = static_cast<long long>(simulationSettings.timeStep * 1000000000.0f / simulationSettings.tickRate);
+
+		performanceStats.targetSimTickTime = timestep_ns;
+		performanceStats.simTickTime = sim_duration_ns;
 
         if (sim_duration_ns < timestep_ns)
         {
@@ -343,10 +385,10 @@ void simulate()
 
         auto endTime2 = std::chrono::high_resolution_clock::now();
         auto duration_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - startTime).count();
-        TraceLog(LOG_INFO, "Total time: %d ns", duration_ns2);
 
         auto error = duration_ns2 - timestep_ns;
-        TraceLog(LOG_INFO, "Δt: %d ns", error);
+
+		performanceStats.lastDeltaTime = error;
     }
 }
 
@@ -354,8 +396,6 @@ int main(void) {
     SetConfigFlags(FLAG_MSAA_4X_HINT  | FLAG_WINDOW_RESIZABLE);
     InitWindow(1600, 900, WINDOW_TITLE);
     SetTargetFPS(60);
-
-
 
     rlImGuiSetup(true);
 
