@@ -19,11 +19,13 @@
 #define PLANET_DIAMETER_INDEX 2
 #define PLANET_ROTATION_PERIOD_INDEX 6
 #define PLANET_DISTANCE_INDEX 8
+#define PLANET_SPEED_INDEX 12
 
 #define MASS_FACTOR 1e24
 #define DIAMETER_FACTOR 1e3 // von km in m umrechnen
 #define ROTATION_FACTOR 60 * 60
 #define DISTANCE_FACTOR 1e9 // von 1e6km in m umrechnen
+#define SPEED_FACTOR 1e3 // von km/s in m/s umrechnen
 
 #define SATELLITE_ASSETS_PATH ASSETS_PATH"/satellites.csv"
 
@@ -79,7 +81,18 @@ void loadPlanets(std::vector<Body> &bodies)
 		body.mass = std::stof(row[PLANET_MASS_INDEX]) * MASS_FACTOR;
 		body.radius = (std::stof(row[PLANET_DIAMETER_INDEX]) / 2.0f) * 1000.f;
 		body.position = { 0, 0,0 };
-		body.position.z = std::stof(row[PLANET_DISTANCE_INDEX]) * DISTANCE_FACTOR;
+
+		float dist = std::stof(row[PLANET_DISTANCE_INDEX]) * DISTANCE_FACTOR;
+		int angle = GetRandomValue(0, 360);
+
+		body.position.z = dist * float(cos(angle));
+		body.position.x = dist * float(sin(angle));
+		body.position.y = 0;
+
+//		body.velocity = { 0, 0, 0 };
+//		body.velocity.x = float(std::stof(row[PLANET_SPEED_INDEX]) * SPEED_FACTOR) * float(cos(angle + 90));
+//		body.velocity.z = float(std::stof(row[PLANET_SPEED_INDEX]) * SPEED_FACTOR) * float(sin(angle + 90));
+
 		body.velocity = { 0, 0, 0 };
 		body.displayRadius = 10.0f;
 
@@ -104,8 +117,10 @@ void loadPlanets(std::vector<Body> &bodies)
 		else
 			body.color = WHITE;
 
-
 		bodies.push_back(body);
+
+		if (body.name == "Venus")
+			return;
 	}
 }
 

@@ -18,6 +18,7 @@
 #define USE_SPINLOCK_TIMER true
 
 #define UNIT_SIZE 100000000.0f // 1 unit = 10,000,000 m
+#define GRAV_CONST 6.67430e-11f
 
 struct GraphicsDebugger
 {
@@ -60,7 +61,7 @@ void DrawBody(Body& body)
 
 	for (size_t i = 1; i < body.trailCount(); i++)
 	{
-		DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
+		//DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
 	}
 
 }
@@ -239,18 +240,15 @@ void CameraSettingsDebuggerUI()
 struct PerformanceStats
 {
 	int fps;
-	float renderFrameTime;
-	long long simTickTime;
-	long long targetSimTickTime;
-	long long lastDeltaTime;
+	int64_t secondsPassed = 0;
 };
 
 PerformanceStats performanceStats;
 
 struct SimulationSettings
 {
-	float tickRate = 1.0f;
-	float timeStep = 1.0 / 60.0f;
+
+	float timeStep = 1.0f;
 	bool paused = false;
 };
 
@@ -260,40 +258,43 @@ void SimulationSettingsDebuggerUI()
 {
 
 	performanceStats.fps = GetFPS();
-	performanceStats.renderFrameTime = GetFrameTime();
 
 	ImGui::Begin("Simulation Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	{
-		ImGui::SliderFloat("Tickrate", &simulationSettings.tickRate, 0.0f, 10.0f);
-		ImGui::SliderFloat("Time Step", &simulationSettings.timeStep, 0.001f, 1.0f);
+		ImGui::SliderFloat("Time Step", &simulationSettings.timeStep, 1.0f, 5.0f);
 		ImGui::Checkbox("Paused", &simulationSettings.paused);
+
+		ImGui::Text("Seconds passed in Simulation: %lld", performanceStats.secondsPassed);
+		ImGui::Text("Minutes passed in Simulation: %lld", performanceStats.secondsPassed / 60);
+		ImGui::Text("Hours passed in Simulation: %lld", performanceStats.secondsPassed / 3600);
+		ImGui::Text("Days passed in Simulation: %lld", performanceStats.secondsPassed / 86400);
 
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
 		ImGui::Text("Simulation Running");
 		ImGui::PopStyleColor();
 
-		static bool showRenderingStats = false;
-		ImGui::Checkbox("Show Rendering Stats", &showRenderingStats);
-
-		if (showRenderingStats)
-		{
-			ImGui::Text("FPS: %d", performanceStats.fps);
-			ImGui::Text("Last render Frame Time: %f", performanceStats.renderFrameTime);
-			ImGui::Text("Target sim tick time: %lld", performanceStats.targetSimTickTime);
-
-			if (performanceStats.simTickTime > performanceStats.targetSimTickTime)
-				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-			else if (performanceStats.simTickTime > performanceStats.targetSimTickTime / 2)
-				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
-			else
-				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-			{
-				ImGui::Text("Last sim tick time: %lld", performanceStats.simTickTime);
-			}
-			ImGui::PopStyleColor();
-
-			ImGui::Text("Last delta time: %lld", performanceStats.lastDeltaTime);
-		}
+//		static bool showRenderingStats = false;
+//		ImGui::Checkbox("Show Rendering Stats", &showRenderingStats);
+//
+//		if (showRenderingStats)
+//		{
+//			ImGui::Text("FPS: %d", performanceStats.fps);
+//			ImGui::Text("Last render Frame Time: %f", performanceStats.renderFrameTime);
+//			ImGui::Text("Target sim tick time: %lld", performanceStats.targetSimTickTime);
+//
+//			if (performanceStats.simTickTime > performanceStats.targetSimTickTime)
+//				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+//			else if (performanceStats.simTickTime > performanceStats.targetSimTickTime / 2)
+//				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
+//			else
+//				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+//			{
+//				ImGui::Text("Last sim tick time: %lld", performanceStats.simTickTime);
+//			}
+//			ImGui::PopStyleColor();
+//
+//			ImGui::Text("Last delta time: %lld", performanceStats.lastDeltaTime);
+//		}
 	}
 	ImGui::End();
 }
@@ -307,37 +308,76 @@ void simulate()
 		auto startTime = std::chrono::high_resolution_clock::now();
 		if (!simulationSettings.paused)
 		{
-			// TODO
+			for (Body& body : bodies)
+			{
+				for (Body& body2 : bodies)
+				{
+					if (&body != &body2)
+					{
+						Vector3 force = { 0, 0, 0 };
+						Vector3 direction = { 0, 0, 0 };
+
+						direction.x = body2.position.x - body.position.x;
+						direction.y = body2.position.y - body.position.y;
+						direction.z = body2.position.z - body.position.z;
+
+						float distance = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+
+						float forceMagnitude = GRAV_CONST * ((double(body.mass) * double(body2.mass)) / (distance * distance));
+
+						if (isinf(forceMagnitude) || isnan(forceMagnitude))
+							TraceLog(LOG_ERROR, "Force magnitude is inf or nan");
+
+						force.x = forceMagnitude * direction.x / distance;
+						force.y = forceMagnitude * direction.y / distance;
+						force.z = forceMagnitude * direction.z / distance;
+
+						body.velocity.x += force.x / body.mass;
+						body.velocity.y += force.y / body.mass;
+						body.velocity.z += force.z / body.mass;
+
+						body.position.x += body.velocity.x;
+						body.position.y += body.velocity.y;
+						body.position.z += body.velocity.z;
+
+						body.appendTrail(body.getDisplayPosition());
+					}
+				}
+			}
 		}
 
-		auto endTime = std::chrono::high_resolution_clock::now();
+		performanceStats.secondsPassed += 1;
 
-		auto sim_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-
-		auto timestep_ns =
-			static_cast<long long>(simulationSettings.timeStep * 1000000000.0f / simulationSettings.tickRate);
-
-		performanceStats.targetSimTickTime = timestep_ns;
-		performanceStats.simTickTime = sim_duration_ns;
-
-		if (sim_duration_ns < timestep_ns)
-		{
-			auto delta_timestep = timestep_ns - sim_duration_ns;
-			auto sleepDur = std::chrono::nanoseconds(delta_timestep);
-			if (USE_SPINLOCK_TIMER)
-				while (std::chrono::high_resolution_clock::now() - startTime < sleepDur);
-			else
-				std::this_thread::sleep_for(sleepDur);
-		}
-
-		auto endTime2 = std::chrono::high_resolution_clock::now();
-		auto duration_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - startTime).count();
-
-		auto error = duration_ns2 - timestep_ns;
-
-		performanceStats.lastDeltaTime = error;
+//		auto endTime = std::chrono::high_resolution_clock::now();
+//
+//		auto sim_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+//
+//		auto timestep_ns =
+//			static_cast<long long>(simulationSettings.timeStep * 1000000000.0f / simulationSettings.tickRate);
+//
+//		performanceStats.targetSimTickTime = timestep_ns;
+//		performanceStats.simTickTime = sim_duration_ns;
+//
+//		if (sim_duration_ns < timestep_ns)
+//		{
+//			auto delta_timestep = timestep_ns - sim_duration_ns;
+//			auto sleepDur = std::chrono::nanoseconds(delta_timestep);
+//			if (USE_SPINLOCK_TIMER)
+//				while (std::chrono::high_resolution_clock::now() - startTime < sleepDur);
+//			else
+//				std::this_thread::sleep_for(sleepDur);
+//		}
+//
+//		auto endTime2 = std::chrono::high_resolution_clock::now();
+//		auto duration_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - startTime).count();
+//
+//		auto error = duration_ns2 - timestep_ns;
+//
+//		performanceStats.lastDeltaTime = error;
 	}
 }
+
+Body* focusBody = nullptr;
 
 void FocusSelectDebugUI()
 {
@@ -348,18 +388,7 @@ void FocusSelectDebugUI()
 		{
 			if (ImGui::Button(body.name.c_str()))
 			{
-				cameraSettings.camera.target = {
-					body.position.x / UNIT_SIZE,
-					body.position.y / UNIT_SIZE,
-					body.position.z / UNIT_SIZE
-				};
-
-				cameraSettings.camera.position = {
-					body.position.x / UNIT_SIZE,
-					cameraSettings.camera.position.y,
-					body.position.z / UNIT_SIZE
-				};
-
+				focusBody = &body;
 			}
 		}
 	}
@@ -378,6 +407,9 @@ int main(void)
 	SetWindowFocused();
 
 	loadPlanets(bodies);
+
+	focusBody = &bodies[0];
+
 	loadSatellites();
 
 	std::thread simThread;
@@ -438,6 +470,18 @@ int main(void)
 			}
 		}
 
+		cameraSettings.camera.target = {
+			focusBody->position.x / UNIT_SIZE,
+			focusBody->position.y / UNIT_SIZE,
+			focusBody->position.z / UNIT_SIZE
+		};
+
+		cameraSettings.camera.position = {
+			focusBody->position.x / UNIT_SIZE,
+			cameraSettings.camera.position.y,
+			focusBody->position.z / UNIT_SIZE
+		};
+
 
 		EndMode3D();
 		GraphicsDebuggerUI();
@@ -449,6 +493,8 @@ int main(void)
 		rlImGuiEnd();
 		EndDrawing();
 	}
+
+
 
 	simRunning = false;
 	simThread.join();
