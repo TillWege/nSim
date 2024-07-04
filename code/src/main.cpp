@@ -316,6 +316,7 @@ void simulate()
 					{
 						Vector3 force = { 0, 0, 0 };
 						Vector3 direction = { 0, 0, 0 };
+						Vector3 forceDirection = { 0, 0, 0 };
 
 						direction.x = body2.position.x - body.position.x;
 						direction.y = body2.position.y - body.position.y;
@@ -328,9 +329,13 @@ void simulate()
 						if (isinf(forceMagnitude) || isnan(forceMagnitude))
 							TraceLog(LOG_ERROR, "Force magnitude is inf or nan");
 
-						force.x = forceMagnitude * direction.x / distance;
-						force.y = forceMagnitude * direction.y / distance;
-						force.z = forceMagnitude * direction.z / distance;
+						forceDirection.x = direction.x / distance;
+						forceDirection.y = direction.y / distance;
+						forceDirection.z = direction.z / distance;
+
+						force.x = forceMagnitude * forceDirection.x;
+						force.y = forceMagnitude * forceDirection.y;
+						force.z = forceMagnitude * forceDirection.z;
 
 						body.velocity.x += force.x / body.mass;
 						body.velocity.y += force.y / body.mass;
