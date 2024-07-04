@@ -24,10 +24,16 @@ file(GLOB PROJECT_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_LIST_DIR}/external/rlImGui/*.h" "${CMAKE_CURRENT_LIST_DIR}/external/rlImGui/*.cpp"
 )
 
+#add_compile_definitions(RL_CULL_DISTANCE_FAR="5000.0f")
+
 set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/src/")
 
 # Declaring our executable
-add_executable(${PROJECT_NAME})
+add_executable(${PROJECT_NAME}
+        src/Body.h
+        src/Loader.h
+        src/Cursor.h
+        src/Camera.h)
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
