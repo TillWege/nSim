@@ -27,6 +27,12 @@
 #define DISTANCE_FACTOR 1e9 // von 1e6km in m umrechnen
 #define SPEED_FACTOR 1e3 // von km/s in m/s umrechnen
 
+#define GM_FACTOR 1e9;
+
+#define MASS_SUN 1.989e30f
+
+#define GRAV_CONST 6.67430e-11f
+
 #define SATELLITE_ASSETS_PATH ASSETS_PATH"/satellites.csv"
 
 std::vector<std::vector<std::string>> loadCSV(const std::string& filename) {
@@ -65,8 +71,8 @@ void loadPlanets(std::vector<Body> &bodies)
 	Body sun = {
 		"Sun",
 		696340000.0f,
-		20.0f,
-		1.989e30f,
+		40.0f,
+        MASS_SUN,
 		YELLOW,
 		{ 0, 0, 0 },
 		{ 0, 0, 0 }
@@ -81,32 +87,32 @@ void loadPlanets(std::vector<Body> &bodies)
 		body.mass = std::stof(row[PLANET_MASS_INDEX]) * MASS_FACTOR;
 		body.radius = (std::stof(row[PLANET_DIAMETER_INDEX]) / 2.0f) * 1000.f;
 		body.position = { 0, 0,0 };
-		body.displayRadius = 10.0f;
+		body.displayRadius = 30.0f;
 
-		float dist = std::stof(row[PLANET_DISTANCE_INDEX]) * DISTANCE_FACTOR;
+        double dist = std::stod(row[PLANET_DISTANCE_INDEX]) * DISTANCE_FACTOR;
 
 		int phaseAng = GetRandomValue(0, 360);
 
-		float phaseRad = float(phaseAng) * (PI / 180);
+        double phaseRad = double(phaseAng) * (PI / 180);
 
-		body.position.z = dist * float(cos(phaseRad));
-		body.position.x = dist * float(sin(phaseRad));
+		body.position.z = dist * cos(phaseRad);
+		body.position.x = dist * sin(phaseRad);
 		body.position.y = 0;
 
-		float speed = std::stof(row[PLANET_SPEED_INDEX]) * SPEED_FACTOR;
+		double speed = std::stod(row[PLANET_SPEED_INDEX]) * SPEED_FACTOR;
 
 		int rotAng = phaseAng + 90;
-		float rotRad = float(rotAng) * (PI / 180);
+        double rotRad = double(rotAng) * (PI / 180);
 
-		body.velocity.z = speed * float(cos(rotRad));
-		body.velocity.x = speed * float(sin(rotRad));
+		body.velocity.z = speed * cos(rotRad);
+		body.velocity.x = speed * sin(rotRad);
 		body.velocity.y = 0;
 
 
 		if(body.name == "Mercury")
 			body.color = GRAY;
 		else if (body.name == "Venus")
-			body.color = YELLOW;
+			body.color = ORANGE;
 		else if (body.name == "Earth")
 			body.color = BLUE;
 		else if (body.name == "Mars")
@@ -125,9 +131,6 @@ void loadPlanets(std::vector<Body> &bodies)
 			body.color = WHITE;
 
 		bodies.push_back(body);
-
-		if (body.name=="Venus")
-			return;
 	}
 }
 

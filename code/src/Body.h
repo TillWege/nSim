@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "raylib.h"
+#include "SciVec3.h"
 
 typedef struct Body Body;
 
@@ -16,19 +17,19 @@ typedef struct Body Body;
 struct Body
 {
 	std::string name;
-	float radius;
-	float displayRadius;
-	float mass;
+    double radius;
+    double displayRadius;
+	double mass;
 	Color color;
-	Vector3 position;
-	Vector3 velocity;
+	SciVec3 position;
+    SciVec3 velocity;
 
 	Body* satellites[128];
 
 	struct
 	{
 		std::vector<Vector3> data;
-		size_t maxCount = 100;
+		size_t maxCount = 100 * 24;
 	} trail;
 
 	void appendTrail(Vector3 point)
@@ -54,7 +55,11 @@ struct Body
 
 	Vector3 getDisplayPosition()
 	{
-		return Vector3 { position.x / UNIT_SIZE, position.y / UNIT_SIZE, position.z / UNIT_SIZE };
+		return Vector3 {
+            float(double(position.x / UNIT_SIZE)),
+            float(double(position.y / UNIT_SIZE)),
+            float(double(position.z / UNIT_SIZE))
+        };
 	}
 };
 

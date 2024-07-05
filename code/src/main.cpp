@@ -54,14 +54,15 @@ void GraphicsDebuggerUI()
 
 void DrawBody(Body& body)
 {
+    auto pos = body.getDisplayPosition();
 	if (graphicsDebugger.showWireframe)
-		DrawSphereWires(body.getDisplayPosition(), body.displayRadius, 10, 10, body.color);
+		DrawSphereWires(pos, body.displayRadius, 10, 10, body.color);
 	else
-		DrawSphereEx(body.getDisplayPosition(), body.displayRadius, 32, 32, body.color);
+		DrawSphereEx(pos, body.displayRadius, 32, 32, body.color);
 
 	for (size_t i = 1; i < body.trailCount(); i++)
 	{
-		//DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
+		DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
 	}
 
 }
@@ -308,47 +309,41 @@ void simulate()
 		auto startTime = std::chrono::high_resolution_clock::now();
 		if (!simulationSettings.paused)
 		{
-			for (Body& body : bodies)
+			for (int i = 0; i < bodies.size(); i++)
 			{
-				for (Body& body2 : bodies)
+				for (int j = 0; j < bodies.size(); j++)
 				{
+                    Body& body = bodies[i];
+                    Body& body2 = bodies[j];
 					if (&body != &body2)
 					{
-						Vector3 force = { 0, 0, 0 };
-						Vector3 direction = { 0, 0, 0 };
-						Vector3 forceDirection = { 0, 0, 0 };
+                        SciVec3 direction = body2.position - body.position;
 
-						direction.x = body2.position.x - body.position.x;
-						direction.y = body2.position.y - body.position.y;
-						direction.z = body2.position.z - body.position.z;
+						double distance = direction.length();
 
-						float distance = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-
-						float forceMagnitude = GRAV_CONST * ((double(body.mass) * double(body2.mass)) / (distance * distance));
+                        double forceMagnitude = GRAV_CONST * ((body.mass * body2.mass) / (distance * distance));
 
 						if (isinf(forceMagnitude) || isnan(forceMagnitude))
 							TraceLog(LOG_ERROR, "Force magnitude is inf or nan");
 
-						forceDirection.x = direction.x / distance;
-						forceDirection.y = direction.y / distance;
-						forceDirection.z = direction.z / distance;
+                        SciVec3 forceDirection = direction.normalized();
+                        SciVec3 force = forceDirection * forceMagnitude;
 
-						force.x = forceMagnitude * forceDirection.x;
-						force.y = forceMagnitude * forceDirection.y;
-						force.z = forceMagnitude * forceDirection.z;
+                        body.velocity += force / body.mass;
 
-						body.velocity.x += force.x / body.mass;
-						body.velocity.y += force.y / body.mass;
-						body.velocity.z += force.z / body.mass;
 
-						body.position.x += body.velocity.x;
-						body.position.y += body.velocity.y;
-						body.position.z += body.velocity.z;
 
-						body.appendTrail(body.getDisplayPosition());
 					}
 				}
 			}
+
+            for (Body& body : bodies)
+            {
+                body.position += body.velocity;
+                if (performanceStats.secondsPassed % (60 * 60) == 0) {
+                    body.appendTrail(body.getDisplayPosition());
+                }
+            }
 		}
 
 		performanceStats.secondsPassed += 1;
@@ -475,16 +470,18 @@ int main(void)
 			}
 		}
 
+
+        auto focusPos = focusBody->getDisplayPosition();
 		cameraSettings.camera.target = {
-			focusBody->position.x / UNIT_SIZE,
-			focusBody->position.y / UNIT_SIZE,
-			focusBody->position.z / UNIT_SIZE
+			focusPos.x,
+            focusPos.y,
+            focusPos.z
 		};
 
 		cameraSettings.camera.position = {
-			focusBody->position.x / UNIT_SIZE,
+			focusPos.x,
 			cameraSettings.camera.position.y,
-			focusBody->position.z / UNIT_SIZE
+			focusPos.z
 		};
 
 
