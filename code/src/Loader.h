@@ -27,13 +27,14 @@
 #define DISTANCE_FACTOR 1e9 // von 1e6km in m umrechnen
 #define SPEED_FACTOR 1e3 // von km/s in m/s umrechnen
 
-#define GM_FACTOR 1e9;
+#define GM_FACTOR 1e9
 
 #define MASS_SUN 1.989e30f
 
 #define GRAV_CONST 6.67430e-11f
 
-#define SATELLITE_ASSETS_PATH ASSETS_PATH"/satellites.csv"
+#define SATELLITE_DATA_ASSETS_PATH ASSETS_PATH"/satelites_data.csv"
+#define SATELLITE_ORBIT_ASSETS_PATH ASSETS_PATH"/satelites_orbit.csv"
 
 std::vector<std::vector<std::string>> loadCSV(const std::string& filename) {
 	std::vector<std::vector<std::string>> data;
@@ -87,7 +88,7 @@ void loadPlanets(std::vector<Body> &bodies)
 		body.mass = std::stof(row[PLANET_MASS_INDEX]) * MASS_FACTOR;
 		body.radius = (std::stof(row[PLANET_DIAMETER_INDEX]) / 2.0f) * 1000.f;
 		body.position = { 0, 0,0 };
-		body.displayRadius = 30.0f;
+		body.displayRadius = 2.0f;
 
         double dist = std::stod(row[PLANET_DISTANCE_INDEX]) * DISTANCE_FACTOR;
 
@@ -134,10 +135,104 @@ void loadPlanets(std::vector<Body> &bodies)
 	}
 }
 
-void loadSatellites()
+void loadSatellites(std::vector<Body> &bodies)
 {
-	auto satelliteData = loadCSV(SATELLITE_ASSETS_PATH);
-	TraceLog(LOG_DEBUG, "Loaded %d satellites", satelliteData.size());
+	auto satelliteData = loadCSV(SATELLITE_DATA_ASSETS_PATH);
+	auto satelliteOrbitData = loadCSV(SATELLITE_ORBIT_ASSETS_PATH);
+
+	satelliteData.erase(satelliteData.begin());
+	satelliteOrbitData.erase(satelliteOrbitData.begin());
+
+	for(auto& row : satelliteData)
+	{
+		std::string parent = row[0];
+		std::string name = row[1];
+
+
+		auto gmStr = row[3];
+
+		// Kerberos and Styx have a '<' in front of their gm value
+		if(gmStr.starts_with('<'))
+			gmStr = gmStr.substr(1);
+
+		// Nereid has 0 as gm value
+		if(gmStr == "0.00000")
+			continue;
+
+		double gm = std::stod(gmStr);
+
+		double radius = std::stod(row[6]);
+
+		std::vector<std::string>* orbit = nullptr;
+
+		for(auto& orbitRow: satelliteOrbitData)
+		{
+			std::string orbitSat = orbitRow[1];
+
+			if(orbitSat == name)
+			{
+				orbit = &orbitRow;
+				break;
+			}
+		}
+
+		if(orbit == nullptr)
+		{
+			TraceLog(LOG_WARNING, "No orbit data found for %s", name.c_str());
+			continue;
+		}
+
+		Body satellite;
+
+		satellite.name = name;
+		satellite.mass = (gm * GM_FACTOR) / GRAV_CONST ;
+		satellite.radius = radius * 1000.0f;
+		satellite.displayRadius = 1.f;
+
+		auto parent_body = std::find_if(bodies.begin(), bodies.end(), [&](const Body& body) {
+			return body.name == parent;
+		});
+
+		if(parent_body == bodies.end())
+		{
+			TraceLog(LOG_WARNING, "Parent body %s not found for satellite %s", parent.c_str(), name.c_str());
+			continue;
+		}
+
+		parent_body->satellites[parent_body->satelliteCount] = &satellite;
+		parent_body->satelliteCount++;
+
+		SciVec3 parentPos = parent_body->position;
+		SciVec3 parentVel = parent_body->velocity;
+
+		double dist = std::stod(orbit->at(6)) * 1000.0f;
+
+		// vis-viva equation
+		double speed = std::sqrt((GRAV_CONST * parent_body->mass) / dist); //v ≈ √(GM/a)
+
+		int phaseAng = GetRandomValue(0, 360);
+		double phaseRad = double(phaseAng) * (PI / 180);
+
+		SciVec3 relPos = { 0, 0, 0 };
+		relPos.z = dist * cos(phaseRad);
+		relPos.x = dist * sin(phaseRad);
+
+		int rotAng = phaseAng + 90;
+		double rotRad = double(rotAng) * (PI / 180);
+
+		SciVec3 relVel = { 0, 0, 0 };
+		relVel.z = speed * cos(rotRad);
+		relVel.x = speed * sin(rotRad);
+
+		satellite.position = parentPos + relPos;
+		satellite.velocity = parentVel + relVel;
+
+		satellite.color = WHITE;
+
+		bodies.push_back(satellite);
+	}
+
+
 }
 
 #endif //LOADER_H

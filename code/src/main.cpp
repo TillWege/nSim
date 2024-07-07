@@ -17,7 +17,7 @@
 #define WINDOW_TITLE "nSim"
 #define USE_SPINLOCK_TIMER true
 
-#define UNIT_SIZE 100000000.0f // 1 unit = 10,000,000 m
+#define UNIT_SIZE 10000000.0f // 1 unit = 1,000,000 m
 #define GRAV_CONST 6.67430e-11f
 
 struct GraphicsDebugger
@@ -347,33 +347,6 @@ void simulate()
 		}
 
 		performanceStats.secondsPassed += 1;
-
-//		auto endTime = std::chrono::high_resolution_clock::now();
-//
-//		auto sim_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-//
-//		auto timestep_ns =
-//			static_cast<long long>(simulationSettings.timeStep * 1000000000.0f / simulationSettings.tickRate);
-//
-//		performanceStats.targetSimTickTime = timestep_ns;
-//		performanceStats.simTickTime = sim_duration_ns;
-//
-//		if (sim_duration_ns < timestep_ns)
-//		{
-//			auto delta_timestep = timestep_ns - sim_duration_ns;
-//			auto sleepDur = std::chrono::nanoseconds(delta_timestep);
-//			if (USE_SPINLOCK_TIMER)
-//				while (std::chrono::high_resolution_clock::now() - startTime < sleepDur);
-//			else
-//				std::this_thread::sleep_for(sleepDur);
-//		}
-//
-//		auto endTime2 = std::chrono::high_resolution_clock::now();
-//		auto duration_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - startTime).count();
-//
-//		auto error = duration_ns2 - timestep_ns;
-//
-//		performanceStats.lastDeltaTime = error;
 	}
 }
 
@@ -410,7 +383,7 @@ int main(void)
 
 	focusBody = &bodies[0];
 
-	loadSatellites();
+	loadSatellites(bodies);
 
 	std::thread simThread;
 

@@ -12,7 +12,7 @@
 
 typedef struct Body Body;
 
-#define UNIT_SIZE 100000000.0f // 1 unit = 10,000,000 m
+#define UNIT_SIZE 10000000.0f // 1 unit = 10,000,000 m
 
 struct Body
 {
@@ -24,6 +24,7 @@ struct Body
 	SciVec3 position;
     SciVec3 velocity;
 
+	int satelliteCount = 0;
 	Body* satellites[128];
 
 	struct
