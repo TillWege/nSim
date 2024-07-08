@@ -15,6 +15,7 @@
 struct GraphicsDebugger
 {
 	bool showWireframe = false;
+	bool showSelector = true;
 	bool showGrid = false;
 	int gridSize = 20;
 	int maxFPS = 100;
@@ -28,6 +29,7 @@ void GraphicsDebuggerUI()
 	{
 
 		ImGui::Checkbox("Show Wireframe", &graphicsDebugger.showWireframe);
+		ImGui::Checkbox("Show Selectors", &graphicsDebugger.showSelector);
 		ImGui::Checkbox("Show Grid", &graphicsDebugger.showGrid);
 		ImGui::SliderInt("Grid Size", &graphicsDebugger.gridSize, 1, 100);
 		ImGui::Separator();
@@ -58,6 +60,13 @@ void DrawBody(Body& body)
 	}
 
 	DrawLine3D(body.trail[body.trailCount() - 1], pos, body.color);
+
+	if(!body.isPlanet and graphicsDebugger.showSelector)
+	{
+		Color selectorColor = body.color;
+		selectorColor.a = 100;
+		DrawSphereEx(pos, body.getEffectiveRadius() * 10, 16, 16, selectorColor);
+	}
 }
 
 void BodyDebuggerUI(Body& body)
@@ -420,9 +429,12 @@ int main(void)
 			std::vector<std::tuple<Body, float>> hitBodies;
 			for (Body& body : bodies)
 			{
-				if (testRayHit(pos.position, pos.direction, body.getDisplayPosition(), body.getEffectiveRadius()))
+				auto radius = body.getEffectiveRadius();
+				if(!body.isPlanet)
+					radius *= 10;
+				if (testRayHit(pos.position, pos.direction, body.getDisplayPosition(), radius))
 				{
-					float dist = distanceToSphere(pos.position, pos.direction, body.getDisplayPosition(), body.getEffectiveRadius());
+					float dist = distanceToSphere(pos.position, pos.direction, body.getDisplayPosition(), radius);
 					hitBodies.emplace_back(body, dist);
 				}
 			}
@@ -430,6 +442,7 @@ int main(void)
 			for (auto& [body, dist] : hitBodies)
 			{
 				TraceLog(LOG_INFO, "Hit body: %s, distance: %f", body.name.c_str(), dist);
+				focusBody = &body;
 			}
 		}
 
