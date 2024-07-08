@@ -1,0 +1,65 @@
+kopernicus:
+  type: Book
+  title: De revolutionibus orbium coelestium
+  author: Nikolaus Kopernikus
+  date: 1543
+
+kepler:
+  type: Book
+  title: Astronomia nova
+  date: 1609
+
+newton:
+  type: Book
+  title: Philosophiæ Naturalis Principia Mathematica
+  date: 1644
+
+planets:
+  title: NASA Data Scraper
+  type: repository
+  url: https://github.com/devstronomy/nasa-data-scraper/tree/master
+  date: 2024-07-08
+
+ssd:
+  title: Solar System Dynamics
+  type: web
+  url: https://ssd.jpl.nasa.gov/
+  date: 2024-07-08
+
+satellite_phys:
+  title: Satellite physical data
+  type: web
+  url: https://ssd.jpl.nasa.gov/sats/phys_par/
+  date: 2024-07-08
+
+satellite_orb:
+  title: Satellite orbital data
+  type: web
+  url: https://ssd.jpl.nasa.gov/sats/elem/
+  date: 2024-07-08
+
+Raylib:
+  title: Raylib
+  type: repository
+  url: https://github.com/raysan5/raylib.git
+  date: 2024-07-08
+  author: raysan5
+
+Imgui:
+  title: Imgui
+  type: repository
+  url: https://github.com/ocornut/imgui.git
+  date: 2024-07-08
+  author: ocornut
+
+Rlimgui:
+  title: Rlimgui
+  type: repository
+  url: https://github.com/raylib-extras/rlImGui.git
+  date: 2024-07-08
+
+cmake:
+  title: CMake
+  type: web
+  url: https://cmake.org/
+  date: 2024-07-08
