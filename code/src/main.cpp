@@ -375,8 +375,10 @@ void SimulationSettingsDebuggerUI()
 		ImGui::Text("Hours passed in Simulation: %lld", performanceStats.secondsPassed / 3600);
 		ImGui::Text("Days passed in Simulation: %lld", performanceStats.secondsPassed / 86400);
 
-		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-		ImGui::Text("Simulation Running");
+
+		ImGui::PushStyleColor(ImGuiCol_Text, simulationSettings.paused ? IM_COL32(255, 0, 0, 255) :IM_COL32(0, 255, 0, 255));
+
+		ImGui::Text(simulationSettings.paused ? "Simulation Paused" : "Simulation Running");
 		ImGui::PopStyleColor();
 	}
 	ImGui::End();
@@ -485,9 +487,20 @@ int main(void)
 		const char* text = "Planet Sim";
 		const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
 
+
 		DrawText(text,
 			GetScreenWidth() / 2 - text_size.x / 2,
 			30,
+			20,
+			RAYWHITE
+		);
+
+		std::string focusText = "Current Focus: " + bodies[focusIndex].name;
+		const Vector2 focusTextSize = MeasureTextEx(GetFontDefault(), focusText.c_str(), 20, 1);
+
+		DrawText(focusText.c_str(),
+			GetScreenWidth() / 2 - focusTextSize.x / 2,
+			50,
 			20,
 			RAYWHITE
 		);
@@ -500,17 +513,15 @@ int main(void)
 
 
 
-		//simulationSettings.paused = true;
+		simulationSettings.paused = true;
 
 		FloatingOrigin = bodies[focusIndex].position;
 		for (Body& body : bodies)
-		{
 			DrawBody(body);
-			//BodyDebuggerUI(body);
-		}
+
 		cameraSettings.update();
 
-		//simulationSettings.paused = false;
+		simulationSettings.paused = false;
 
 
 
@@ -559,9 +570,9 @@ int main(void)
 
 
 		EndMode3D();
-		GraphicsDebuggerUI();
+		//GraphicsDebuggerUI();
 		//NewBodyDebuggerUI();
-		CameraSettingsDebuggerUI();
+		//CameraSettingsDebuggerUI();
 		SimulationSettingsDebuggerUI();
 		FocusSelectDebugUI();
 
