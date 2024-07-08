@@ -346,18 +346,18 @@ void simulate()
 	}
 }
 
-Body* focusBody = nullptr;
+int focusIndex = 0;
 
 void FocusSelectDebugUI()
 {
 	ImGui::Begin("Focus Select");
 	{
 		ImGui::Text("Select a body to focus on");
-		for (Body& body : bodies)
+		for (int i = 0; i < bodies.size(); i++)
 		{
-			if (ImGui::Button(body.name.c_str()))
+			if (ImGui::Button(bodies[i].name.c_str()))
 			{
-				focusBody = &body;
+				focusIndex = i;
 			}
 		}
 	}
@@ -378,8 +378,6 @@ int main(void)
 	loadPlanets(bodies);
 
 	loadSatellites(bodies);
-
-	focusBody = &bodies[0];
 
 	std::thread simThread;
 
@@ -407,7 +405,6 @@ int main(void)
 		if (graphicsDebugger.showGrid)
 			DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 100.f);
 
-		auto focusPos = focusBody->getDisplayPosition();
 
 		simulationSettings.paused = true;
 		for (Body& body : bodies)
@@ -415,16 +412,18 @@ int main(void)
 			DrawBody(body);
 			//BodyDebuggerUI(body);
 		}
+		auto focusPos = bodies[focusIndex].getDisplayPosition();
+		cameraSettings.update(focusPos);
+
 		simulationSettings.paused = false;
 
-		cameraSettings.update(focusPos);
 
 
 		if (IsMouseButtonPressed(0))
 		{
 			auto pos = GetMouseRay(GetMousePosition(), cameraSettings.camera);
-			TraceLog(LOG_INFO, "Mouse ray POS: %f, %f, %f", pos.position.x, pos.position.y, pos.position.z);
-			TraceLog(LOG_INFO, "Mouse ray DIR: %f, %f, %f", pos.direction.x, pos.direction.y, pos.direction.z);
+			//TraceLog(LOG_INFO, "Mouse ray POS: %f, %f, %f", pos.position.x, pos.position.y, pos.position.z);
+			//TraceLog(LOG_INFO, "Mouse ray DIR: %f, %f, %f", pos.direction.x, pos.direction.y, pos.direction.z);
 
 			std::vector<std::tuple<Body, float>> hitBodies;
 			for (Body& body : bodies)
@@ -442,7 +441,6 @@ int main(void)
 			for (auto& [body, dist] : hitBodies)
 			{
 				TraceLog(LOG_INFO, "Hit body: %s, distance: %f", body.name.c_str(), dist);
-				focusBody = &body;
 			}
 		}
 
