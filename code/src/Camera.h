@@ -33,7 +33,7 @@ struct CameraSettings
 	int cameraMode = CAMERA_CUSTOM;
 	SpericalCoord coord;
 
-	void update(Vector3 focusPos)
+	void update()
 	{
 		if(GetMouseWheelMove() != 0)
 		{
@@ -72,11 +72,17 @@ struct CameraSettings
 		auto offsetY = this->coord.r * std::cos(this->coord.theta * DEG2RAD);
 
 
-		this->camera.position.x = focusPos.x + offsetX;
-		this->camera.position.y = focusPos.y + offsetY;
-		this->camera.position.z = focusPos.z + offsetZ;
+//		this->camera.position.x = focusPos.x + offsetX;
+//		this->camera.position.y = focusPos.y + offsetY;
+//		this->camera.position.z = focusPos.z + offsetZ;
+//
+//		this->camera.target = focusPos;
 
-		this->camera.target = focusPos;
+		this->camera.position.x = offsetX;
+		this->camera.position.y = offsetY;
+		this->camera.position.z = offsetZ;
+
+		this->camera.target = {0, 0, 0};
 	}
 };
 

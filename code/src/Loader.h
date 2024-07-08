@@ -179,26 +179,37 @@ void loadSatellites(std::vector<Body> &bodies)
 		satellite.mass = (gm * GM_FACTOR) / GRAV_CONST ;
 		satellite.radius = radius * 1000.0f;
 
-		auto parent_body = std::find_if(bodies.begin(), bodies.end(), [&](const Body& body) {
-			return body.name == parent;
-		});
+//		auto parent_body = std::find_if(bodies.begin(), bodies.end(), [&](const Body& body) {
+//			return body.name == parent;
+//		});
 
-		if(parent_body == bodies.end())
+		int parentIndex = -1;
+
+		for(int i = 0; i < bodies.size(); i++)
+		{
+			if(bodies[i].name == parent)
+			{
+				parentIndex = i;
+				break;
+			}
+		}
+
+		if(parentIndex == -1)
 		{
 			TraceLog(LOG_WARNING, "Parent body %s not found for satellite %s", parent.c_str(), name.c_str());
 			continue;
 		}
 
-		parent_body->satellites[parent_body->satelliteCount] = &satellite;
-		parent_body->satelliteCount++;
+		bodies[parentIndex].satelliteNames[bodies[parentIndex].satelliteCount] = name;
+		bodies[parentIndex].satelliteCount++;
 
-		SciVec3 parentPos = parent_body->position;
-		SciVec3 parentVel = parent_body->velocity;
+		SciVec3 parentPos = bodies[parentIndex].position;
+		SciVec3 parentVel = bodies[parentIndex].velocity;
 
 		double dist = std::stod(orbit->at(6)) * 1000.0f;
 
 		// vis-viva equation
-		double speed = std::sqrt((GRAV_CONST * parent_body->mass) / dist); //v ≈ √(GM/a)
+		double speed = std::sqrt((GRAV_CONST * bodies[parentIndex].mass) / dist); //v ≈ √(GM/a)
 
 		int phaseAng = GetRandomValue(0, 360);
 		double phaseRad = double(phaseAng) * (PI / 180);

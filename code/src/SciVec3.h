@@ -45,16 +45,25 @@ struct SciVec3
         return {x / scalar, y / scalar, z / scalar};
     }
 
-    double length() const
+    [[nodiscard]] double length() const
     {
         return sqrt(x * x + y * y + z * z);
     }
 
-    SciVec3 normalized() const
+    [[nodiscard]] SciVec3 normalized() const
     {
         double len = length();
         return {x / len, y / len, z / len};
     }
+
+	[[nodiscard]] Vector3 toVector3() const
+	{
+		return {
+			static_cast<float>(x),
+			static_cast<float>(y),
+			static_cast<float>(z)
+		};
+	}
 };
 
 #endif //NSIM_SCIVEC3_H

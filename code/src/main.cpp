@@ -23,6 +23,21 @@ struct GraphicsDebugger
 
 GraphicsDebugger graphicsDebugger;
 
+SciVec3 FloatingOrigin = { 0, 0, 0 };
+
+Vector3 realignVector(SciVec3 vec)
+{
+	auto diff = vec - FloatingOrigin;
+
+	SciVec3 diff_scaled = {
+		diff.x / UNIT_SIZE,
+		diff.y / UNIT_SIZE,
+		diff.z / UNIT_SIZE
+	};
+
+	return diff_scaled.toVector3();
+}
+
 void GraphicsDebuggerUI()
 {
 	ImGui::Begin("Graphics Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -46,20 +61,80 @@ void GraphicsDebuggerUI()
 	ImGui::End();
 }
 
+std::vector<Body> bodies;
+int focusIndex = 0;
+
+
+int getParentBodyIndex()
+{
+	auto res = -1;
+
+	for (int i = 0; i < bodies.size(); i++)
+	{
+		for (int j = 0; j < bodies[i].satelliteCount; j++)
+		{
+			if (bodies[i].satelliteNames[j] == bodies[focusIndex].name)
+			{
+				res = i;
+				break;
+			}
+		}
+	}
+
+	return res;
+}
+
 void DrawBody(Body& body)
 {
-    auto pos = body.getDisplayPosition();
+    auto pos = body.getDisplayPosition(FloatingOrigin);
 	if (graphicsDebugger.showWireframe)
 		DrawSphereWires(pos, body.getEffectiveRadius(), 16, 16, body.color);
 	else
 		DrawSphereEx(pos, body.getEffectiveRadius(), 16, 16, body.color);
 
-	for (size_t i = 1; i < body.trailCount(); i++)
+	if(!body.isPlanet)
 	{
-		DrawLine3D(body.trail[i - 1], body.trail[i], body.color);
+		Body* currentFocus = &bodies[focusIndex];
+		bool found = currentFocus->name == body.name;
+
+		// If the current focus is not a planet, set the focus to the parent body
+		if(!currentFocus->isPlanet)
+		{
+			int parentIndex = getParentBodyIndex();
+			if(parentIndex != -1)
+			{
+				currentFocus = &bodies[parentIndex];
+			}
+		}
+
+		if (!found)
+		{
+			for (int i = 0; i < currentFocus->satelliteCount; i++)
+			{
+				if (currentFocus->satelliteNames[i] == body.name)
+				{
+					found = true;
+					break;
+				}
+			}
+
+			// Don't draw Trails or selector for satellites of unselected bodies
+			if (!found)
+				return;
+		}
 	}
 
-	DrawLine3D(body.trail[body.trailCount() - 1], pos, body.color);
+
+	for (size_t i = 1; i < body.trailCount(); i++)
+	{
+		auto startPos = realignVector(body.trail[i - 1]);
+		auto endPos = realignVector(body.trail[i]);
+
+
+		DrawLine3D(startPos, endPos, body.color);
+	}
+
+	DrawLine3D(realignVector(body.trail[body.trailCount() - 1]), pos, body.color);
 
 	if(!body.isPlanet and graphicsDebugger.showSelector)
 	{
@@ -86,8 +161,8 @@ void BodyDebuggerUI(Body& body)
 
 		for (size_t i = 0; i < body.trailCount(); i++)
 		{
-			Vector3& point = body.trail[i];
-			ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
+			//Vector3& point = body.trail[i];
+			//ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
 		}
 
 		ImGui::EndChild();
@@ -95,7 +170,6 @@ void BodyDebuggerUI(Body& body)
 	ImGui::End();
 }
 
-std::vector<Body> bodies;
 
 bool testRayHit(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, float sphereRadius)
 {
@@ -267,14 +341,32 @@ void SimulationSettingsDebuggerUI()
 	ImGui::Begin("Simulation Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	{
 		ImGui::Text("Seconds per sim-tick");
-		ImGui::SliderInt("##simtick", &simulationSettings.timeStep, 1.0f, 10.0f);
+
+		if(ImGui::Button("-100", { 40, 0 }))
+			simulationSettings.timeStep -= 100.0f;
+
 		ImGui::SameLine();
-		if(ImGui::Button("+1", { 50, 0 }))
+		if(ImGui::Button("-10", { 40, 0 }))
+			simulationSettings.timeStep -= 10.0f;
+
+		ImGui::SameLine();
+		if(ImGui::Button("-1", { 40, 0 }))
+			simulationSettings.timeStep -= 1.0f;
+
+		ImGui::SameLine();
+		ImGui::Text("%d", simulationSettings.timeStep);
+
+		ImGui::SameLine();
+		if(ImGui::Button("+1", { 40, 0 }))
 			simulationSettings.timeStep += 1.0f;
 
 		ImGui::SameLine();
-		if(ImGui::Button("-1", { 50, 0 }))
-			simulationSettings.timeStep -= 1.0f;
+		if(ImGui::Button("+10", { 40, 0 }))
+			simulationSettings.timeStep += 10.0f;
+
+		ImGui::SameLine();
+		if(ImGui::Button("+100", { 40, 0 }))
+			simulationSettings.timeStep += 100.0f;
 
 		ImGui::Checkbox("Paused", &simulationSettings.paused);
 
@@ -335,7 +427,7 @@ void simulate()
 
 				if(performanceStats.secondsPassed % stepSize <= TIME_STEP)
 				{
-					body.appendTrail(body.getDisplayPosition());
+					body.appendTrail(body.position);
 				}
 
             }
@@ -345,8 +437,6 @@ void simulate()
 
 	}
 }
-
-int focusIndex = 0;
 
 void FocusSelectDebugUI()
 {
@@ -363,6 +453,8 @@ void FocusSelectDebugUI()
 	}
 	ImGui::End();
 }
+
+
 
 int main(void)
 {
@@ -406,16 +498,19 @@ int main(void)
 			DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 100.f);
 
 
-		simulationSettings.paused = true;
+
+
+		//simulationSettings.paused = true;
+
+		FloatingOrigin = bodies[focusIndex].position;
 		for (Body& body : bodies)
 		{
 			DrawBody(body);
 			//BodyDebuggerUI(body);
 		}
-		auto focusPos = bodies[focusIndex].getDisplayPosition();
-		cameraSettings.update(focusPos);
+		cameraSettings.update();
 
-		simulationSettings.paused = false;
+		//simulationSettings.paused = false;
 
 
 
@@ -428,19 +523,34 @@ int main(void)
 			std::vector<std::tuple<Body, float>> hitBodies;
 			for (Body& body : bodies)
 			{
-				auto radius = body.getEffectiveRadius();
+				float radius = body.getEffectiveRadius();
 				if(!body.isPlanet)
 					radius *= 10;
-				if (testRayHit(pos.position, pos.direction, body.getDisplayPosition(), radius))
+
+				auto bodyPos = body.getDisplayPosition(FloatingOrigin);
+				if (testRayHit(pos.position, pos.direction, bodyPos, radius))
 				{
-					float dist = distanceToSphere(pos.position, pos.direction, body.getDisplayPosition(), radius);
+					float dist = distanceToSphere(pos.position, pos.direction, bodyPos, radius);
+					if(isnan(dist) || isinf(dist))
+						continue;
+
 					hitBodies.emplace_back(body, dist);
 				}
 			}
 
+
 			for (auto& [body, dist] : hitBodies)
 			{
 				TraceLog(LOG_INFO, "Hit body: %s, distance: %f", body.name.c_str(), dist);
+
+				for(int i = 0; i < bodies.size(); i++)
+				{
+					if(bodies[i].name == body.name)
+					{
+						focusIndex = i;
+						break;
+					}
+				}
 			}
 		}
 

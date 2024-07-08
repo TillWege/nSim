@@ -24,9 +24,9 @@ struct Body
 	bool isPlanet;
 
 	int satelliteCount = 0;
-	Body* satellites[128]{};
+	std::string satelliteNames[64] = {""};
 
-	std::vector<Vector3> trail;
+	std::vector<SciVec3> trail;
 	size_t trailLength = 0;
 	size_t lastTrailDelta = 0;
 
@@ -50,7 +50,7 @@ struct Body
 		trail.reserve(trailLength);
 	}
 
-	void appendTrail(Vector3 point)
+	void appendTrail(SciVec3 point)
 	{
 		if (trail.size() >= this->trailLength)
 			trail.erase(trail.begin());
@@ -64,12 +64,14 @@ struct Body
 		return trail.size();
 	}
 
-	[[nodiscard]] Vector3 getDisplayPosition() const
+	[[nodiscard]] Vector3 getDisplayPosition(SciVec3 origin) const
 	{
+		auto deltaVec = position - origin;
+
 		return Vector3 {
-            float(double(position.x / UNIT_SIZE)),
-            float(double(position.y / UNIT_SIZE)),
-            float(double(position.z / UNIT_SIZE))
+            float(double(deltaVec.x / UNIT_SIZE)),
+            float(double(deltaVec.y / UNIT_SIZE)),
+            float(double(deltaVec.z / UNIT_SIZE))
         };
 	}
 
