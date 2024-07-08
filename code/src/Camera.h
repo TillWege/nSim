@@ -10,7 +10,7 @@
 struct CameraSettings
 {
 	Camera camera = {
-		.position = { 0.0f, 500.0f, 0.0f },
+		.position = { 0.0f, 2500.0f, 0.0f },
 		.target = { 0.0f, 0.0f, 0.0f },
 		.up = { 0.0f, 0.0f, 1.0f },
 		.fovy = 45.0f,
@@ -26,7 +26,7 @@ struct CameraSettings
 			this->zoom = std::max(this->zoom + int(-GetMouseWheelMove()), 1);
 		}
 
-		this->camera.position.y = 500.0f * this->zoom;
+		this->camera.position.y = 2500.0f * this->zoom;
 	}
 };
 

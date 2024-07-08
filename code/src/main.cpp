@@ -1,23 +1,15 @@
-//#define RL_CULL_DISTANCE_FAR 5000.0f
 #include "raylib.h"
 #include "imgui.h"
-#include "imgui_stdlib.h"
-#include "rlImGui.h" //// include the API header
+#include "rlImGui.h"
 #include <cmath>
 #include <string>
 #include "vector"
-#include "rlImGuiColors.h"
 #include "Body.h"
 #include "Loader.h"
 #include "rlgl.h"
 #include <thread>
-#include "Cursor.h"
 #include "Camera.h"
 #include "Consts.h"
-
-#define WINDOW_TITLE "nSim"
-#define USE_SPINLOCK_TIMER true
-
 
 
 struct GraphicsDebugger
@@ -247,8 +239,7 @@ PerformanceStats performanceStats;
 
 struct SimulationSettings
 {
-
-	float timeStep = 1.0f;
+	int timeStep = TIME_STEP;
 	bool paused = false;
 };
 
@@ -261,7 +252,16 @@ void SimulationSettingsDebuggerUI()
 
 	ImGui::Begin("Simulation Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	{
-		ImGui::SliderFloat("Time Step", &simulationSettings.timeStep, 1.0f, 5.0f);
+		ImGui::Text("Seconds per sim-tick");
+		ImGui::SliderInt("##simtick", &simulationSettings.timeStep, 1.0f, 10.0f);
+		ImGui::SameLine();
+		if(ImGui::Button("+1", { 50, 0 }))
+			simulationSettings.timeStep += 1.0f;
+
+		ImGui::SameLine();
+		if(ImGui::Button("-1", { 50, 0 }))
+			simulationSettings.timeStep -= 1.0f;
+
 		ImGui::Checkbox("Paused", &simulationSettings.paused);
 
 		ImGui::Text("Seconds passed in Simulation: %lld", performanceStats.secondsPassed);
@@ -272,29 +272,6 @@ void SimulationSettingsDebuggerUI()
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
 		ImGui::Text("Simulation Running");
 		ImGui::PopStyleColor();
-
-//		static bool showRenderingStats = false;
-//		ImGui::Checkbox("Show Rendering Stats", &showRenderingStats);
-//
-//		if (showRenderingStats)
-//		{
-//			ImGui::Text("FPS: %d", performanceStats.fps);
-//			ImGui::Text("Last render Frame Time: %f", performanceStats.renderFrameTime);
-//			ImGui::Text("Target sim tick time: %lld", performanceStats.targetSimTickTime);
-//
-//			if (performanceStats.simTickTime > performanceStats.targetSimTickTime)
-//				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-//			else if (performanceStats.simTickTime > performanceStats.targetSimTickTime / 2)
-//				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
-//			else
-//				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-//			{
-//				ImGui::Text("Last sim tick time: %lld", performanceStats.simTickTime);
-//			}
-//			ImGui::PopStyleColor();
-//
-//			ImGui::Text("Last delta time: %lld", performanceStats.lastDeltaTime);
-//		}
 	}
 	ImGui::End();
 }
@@ -305,10 +282,11 @@ void simulate()
 {
 	while (simRunning)
 	{
-		auto startTime = std::chrono::high_resolution_clock::now();
+
 		if (!simulationSettings.paused)
 		{
-			for (int i = 0; i < bodies.size(); i++)
+			// Skip the first body (sun)
+			for (int i = 1; i < bodies.size(); i++)
 			{
 				for (int j = 0; j < bodies.size(); j++)
 				{
@@ -328,26 +306,29 @@ void simulate()
                         SciVec3 forceDirection = direction.normalized();
                         SciVec3 force = forceDirection * forceMagnitude;
 
-                        body.velocity += force / body.mass;
+						SciVec3 acceleration = force / body.mass;
 
-
-
+                        body.velocity += acceleration * simulationSettings.timeStep;
 					}
 				}
 			}
 
             for (Body& body : bodies)
             {
-                body.position += body.velocity;
+                body.position += body.velocity * simulationSettings.timeStep;
 
 				int stepSize = body.isPlanet ? PLANET_TRAIL_STEP : SATELLITE_TRAIL_STEP;
-                if (performanceStats.secondsPassed % stepSize == 0) {
-                    body.appendTrail(body.getDisplayPosition());
-                }
+
+				if(performanceStats.secondsPassed % stepSize <= TIME_STEP)
+				{
+					body.appendTrail(body.getDisplayPosition());
+				}
+
             }
+
+			performanceStats.secondsPassed += simulationSettings.timeStep;
 		}
 
-		performanceStats.secondsPassed += 1;
 	}
 }
 
@@ -382,9 +363,9 @@ int main(void)
 
 	loadPlanets(bodies);
 
-	focusBody = &bodies[0];
-
 	loadSatellites(bodies);
+
+	focusBody = &bodies[0];
 
 	std::thread simThread;
 
@@ -412,8 +393,7 @@ int main(void)
 		if (graphicsDebugger.showGrid)
 			DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 10.f);
 
-		if (!simulationSettings.paused)
-			cameraSettings.update();
+		cameraSettings.update();
 
 		for (Body& body : bodies)
 		{

@@ -5,6 +5,8 @@
 #ifndef CONSTS_H
 #define CONSTS_H
 
+#define WINDOW_TITLE "nSim"
+
 // PHYSICS CONSTANTS
 
 #define UNIT_SIZE 1000000.0f // 1 unit = 1,000,000 m
