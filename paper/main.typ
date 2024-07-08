@@ -96,9 +96,11 @@ Die Bibliotheken _ImGui_ und _rlImGui_ wurden als Submodule in das Projekt einge
 
 = Implementierung
 
+== Grundlegendes
+
 Die Implementierung der Simulation folgt dem zuvor beschriebenen Ablauf. In der _Main_-Funktion der Simulation werden zuerst die nötigen Bibliotheken initialisiert. Für dieses Projekt war es nötig, einen eigenen _Vektor_-Datentypen zu verwenden. Die Gründe Hierzu werden in @32bit erläutert. Dieser _SciVec_ verwendet 64-Bit gleitkomma-Zahlen, um möglichst preziese Berechnungen zu ermöglichen. Der Datentyp und die dazugehörigen Funktionen zur Addition, Subtraktion, Multiplikation und Skalierung können in _SciVec.h_ geufunden werden. Die Körper des Sonnensystems werden mithilfe eines Datentypens _Body_ abgebildet. In _Body.h_ wird das _struct_ _Body_ wie folgt definiert:
 
-```cpp
+#figure([```cpp
 struct Body
 {
 	std::string name;
@@ -114,19 +116,78 @@ struct Body
 
 	...
 }
-```
-Die Felder _radius_, _mass_, _postion_, und _velocity_ sind für die Simulation am wichtigesten. Für jedes Objekt wird außerdem ein _Name_, eine _Farbe_, und eine Liste an Satllieten gespeichert.
+```], caption: "Definition des _Body_-Datentyps")
+Die Felder _radius_, _mass_, _postion_, und _velocity_ sind für die Simulation am wichtigesten. Für jedes Objekt wird außerdem ein _Name_, eine _Farbe_, und eine Liste an Satllieten gespeichert. Die Simulation verwaltet eine danamische Liste (_std::vector_) an _Body_-Objekten. Diese Liste stellt den aktuellen zustand der Simulation da. Um diese Liste nun mit Daten zu füllen, müssen wir unsere Datensätze einladen. 
 
-Die Datei _loader.h_ beinhaltet die Logik, welche die Datensätze aus @dataset lädt.
+== Laden der Datensätze
 
-= Probleme <problems>
+Die Datei _Loader.h_ beinhaltet die Funktionen, welche die Datensätze aus @dataset lädt. Die Funktion _loadPlanets_ lädt die _planets.csv_-Datei aus dem _Assets_-Ordner. Zuerst erstellt diese Funktion allerdings die Sonne, welche nicht im Datensatz enthalten ist. Hierfür wurden die wichtigsten Werte in _Consts.h_ definiert. Dannach iteriert die Funktion über die Zeilen der CSV-Datei und erstellt für jede Zeile ein _Body_-Objekt. Hierbei ist es wichtig, die einzelnen Werte in die Korrekten Einheiten umzuwandeln. Für diese Simulation wurde die Entscheidung getroffen, alle Werte in SI-Einheiten zu speichern. Insbesonders für die Datenwerte _Mass_ war es nötig, 64-Bit Gleitkommazahlen zu verwenden. Um die Visualisierung besser zu gestalten, wurden allen Planeten eine individuelle Farbe zugeordnet. 
+
+Neben der bereits genannten Daten, war die bestimmung der initialen Position und Geschwindigkeit der Körper eine wichtige Entscheidung. Der Datensatz der Planeten beinhält sowohl Werte für den _Aphelion_, den _Perihelion_, die _Inclination_ und die _Exzentrizität_ der Planeten. Des Weiteren wurde ein Wert für die durchschnittliche _orbital_velocity_ angegeben.
+
+// TODO Richtig implmentieren und dann beschreiben
+
+#block()
+
+Die Funktion _loadSatallites_ funktioniert ähnlich wie _loadPlanets_. Hierbei wird die Dateien _satellites_data.csv_ und _satellites_orbit.csv_ kombiniert, um die Satellieten der Planeten zu erstellen. Für jeden Sateliet wird zuerst der _Parent_-Körper gesucht. Dannach werden die weiteren Planetaren informationen bestimmt. Dieser Datensatz weißt die Besonderheit auf, dass nicht die Masse der Objekte angegeben ist, sondern der _Standard Gravitational Parameter_ $mu$. Dieser Wert ist definiert als $mu = G * m$, wobei $G$ die Gravitationskonstante ist. Um die Masse der Satellieten zu bestimmen, wird der Wert $mu$ durch $G$ geteilt. 
+
+Die bestimmung der initialen Position und Geschwindigkeit der Satellieten ist etwas komplizierter. Hierzu müssen wir nicht nur die Orbitalen Parameter des Satllieten, sondern auch die des Parent-Körpers verwenden.
+
+// TODO Richtig implmentieren und dann beschreiben
+
+== Aufteilung von Simulation und Visualisierung
+Die Simulation und Visualisierung sind zwei verschiedene Aufgaben mit unterschiedlichen Zielen. Die Visualisierung in geregelten Abstände den Zustand der Simulation darstellen. Dieser Vorgang ist größtenteils abhängig von der Grafikkarte. Die Simulation hingegen ist abhängig von der CPU. Ideallerweise sind die beiden Prozesse soweit wie möglich voneinander getrennt. Dies wurde in diesem Projekt so realisiert, dass die Simulation in einem getrennten _Thread_ läuft. Die Visualisierung hingegen läuft im _Main_-Thread der Anwendung. Beide Threads greifen auf die selbe Liste an Daten zu, weshalb es nötig war, die Zugriffe auf diese Liste zu synchronisieren. Um eine möglichst geringe Latenz für den Nutzer zu ermöglichen, hat die Visualisierung die priämre Kontrolle über die Liste. Sie kann angeben wann die Simulation auf die Liste zugreifen kann, indem die Simulation temporär pausiert wird.
+
+== Implementieren der Simulation
+Die Simualtion ist der Kern der Anwendung. Um möglichst große Zeiträume simluieren zu können, ist es also nötig, diesen Vorgang möglichst effizient zu implementieren. Die Simulation wird in der Funktion _simulate_ in _main.cpp_ implementiert. Diese Funktion wird in einem eigenen _Thread_ ausgeführt. Dieser Thread arbeitet komplett unabhängig von der Visualisierung. Solang die Simulation nicht pausiert ist, entwedet durch den Nutzer, oder durch die Visualisierung, wird die Simulation in einer Schleife ausgeführt. Im folgenden wird eine vereinfachte Version der Funktion _simulate_ gezeigt:
+
+#figure([```cpp
+void simulate()
+{
+  if(simulationRunning)
+  {
+    for(body1 in bodies)
+    {
+      for(body2 in bodies)
+      {
+        if(body1 == body2)
+          continue;
+        
+        Force = calculate_gravity(body1, body2);
+
+        body1.acceleration += Force / body1.mass;
+        body2.acceleration -= Force / body2.mass;
+
+        body1.velocity += body1.acceleration * delta_t;
+        body2.velocity += body2.acceleration * delta_t;
+
+        body1.position += body1.velocity * delta_t;
+        body2.position += body2.velocity * delta_t;
+      }
+    }
+  }
+}
+```], caption: "Vereinfachte Version der Funktion _simulate_")
+
+Die Funktion folgt dem zuvor definierten Aufbau. Für jeden Körper wird die Gravitationskraft berechnet, welche auf den Körper wirkt. Mit dieser Kraft wird die Beschleunigung des Körpers bestimmt. Mit der Beschleunigung wird die Geschwindigkeit, und damit die Position des Körpers bestimmt. Dieser Vorgang wird für alle Körper in der Liste _bodies_ durchgeführt.
+
+Wichtig ist hierbei, dass die Berechnung von der globalen variable _delta_t_ abhängig ist. Diese Variable bestimmt den Zeitschritt der Simulation. Je kleiner dieser Wert ist, desto genauer ist die Simulation, jedoch auch langsamer. Je nach verfügbarer Rechenleistung kann dieser Wert auf bis zu 1s pro iteration gesetzt werden. Mehr hierzu in @results.
+
+== Implementieren der Visualisierung
+
+Ideen:
+- Visualisierung der Planeten
+- Visualisierung der Satellieten
+- Trails
+- Spherecial camera movement
+- Interface Elemente
+
+= Probleme und Lösungen <problems>
 
 == 32-Bit gleitkommazahlen <32bit>
 
-== Finden von passenden Datensätzen
+== Floating Origin <floating_origin>
 
-== Bestimmen von Initialwerten
-
-= Ergebnisse
+= Ergebnisse <results>
 
 = Diskussion
