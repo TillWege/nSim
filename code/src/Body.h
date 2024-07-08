@@ -9,58 +9,72 @@
 #include <vector>
 #include "raylib.h"
 #include "SciVec3.h"
+#include "Consts.h"
 
 typedef struct Body Body;
-
-#define UNIT_SIZE 10000000.0f // 1 unit = 10,000,000 m
 
 struct Body
 {
 	std::string name;
     double radius;
-    double displayRadius;
 	double mass;
-	Color color;
+	Color color{};
 	SciVec3 position;
     SciVec3 velocity;
+	bool isPlanet;
 
 	int satelliteCount = 0;
-	Body* satellites[128];
+	Body* satellites[128]{};
 
-	struct
+	std::vector<Vector3> trail;
+	size_t trailLength = 0;
+
+	explicit Body (bool isPlanet)
 	{
-		std::vector<Vector3> data;
-		size_t maxCount = 100 * 24;
-	} trail;
+		this->name = "";
+		this->radius = 0;
+		this->mass = 0;
+		this->color = BLANK;
+		this->position = {0, 0, 0};
+		this->velocity = {0, 0, 0};
+		this->satelliteCount = 0;
+		this->isPlanet = isPlanet;
+
+
+		if (isPlanet)
+			this->trailLength = PLANET_TRAIL_LENGTH * PLANET_TRAIL_RESOLUTION;
+		else
+			this->trailLength = SATELLITE_TRAIL_LENGTH * SATELLITE_TRAIL_RESOLUTION;
+
+		trail.reserve(trailLength);
+	}
 
 	void appendTrail(Vector3 point)
 	{
-		if (trail.data.size() >= trail.maxCount)
-		{
-			trail.data.erase(trail.data.begin());
-		}
-		trail.data.push_back(point);
+		if (trail.size() >= this->trailLength)
+			trail.erase(trail.begin());
+
+		trail.push_back(point);
 	}
 
-	void updateTrailSize(size_t size)
+
+	[[nodiscard]] size_t trailCount() const
 	{
-		trail.maxCount = size;
-		trail.data.clear();
-		trail.data.reserve(size);
+		return trail.size();
 	}
 
-	size_t trailCount()
-	{
-		return trail.data.size();
-	}
-
-	Vector3 getDisplayPosition()
+	[[nodiscard]] Vector3 getDisplayPosition() const
 	{
 		return Vector3 {
             float(double(position.x / UNIT_SIZE)),
             float(double(position.y / UNIT_SIZE)),
             float(double(position.z / UNIT_SIZE))
         };
+	}
+
+	[[nodiscard]] size_t getEffectiveRadius() const
+	{
+		return size_t(radius / UNIT_SIZE);
 	}
 };
 

@@ -33,7 +33,8 @@ add_executable(${PROJECT_NAME}
         src/Body.h
         src/Loader.h
         src/Cursor.h
-        src/Camera.h)
+        src/Camera.h
+        src/Consts.h)
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)

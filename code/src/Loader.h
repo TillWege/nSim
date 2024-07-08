@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include "raylib.h"
+#include "Consts.h"
 
 #define PLANET_ASSETS_PATH ASSETS_PATH"/planets.csv"
 
@@ -27,14 +28,8 @@
 #define DISTANCE_FACTOR 1e9 // von 1e6km in m umrechnen
 #define SPEED_FACTOR 1e3 // von km/s in m/s umrechnen
 
-#define GM_FACTOR 1e9
-
-#define MASS_SUN 1.989e30f
-
-#define GRAV_CONST 6.67430e-11f
-
-#define SATELLITE_DATA_ASSETS_PATH ASSETS_PATH"/satelites_data.csv"
-#define SATELLITE_ORBIT_ASSETS_PATH ASSETS_PATH"/satelites_orbit.csv"
+#define SATELLITE_DATA_ASSETS_PATH ASSETS_PATH"/satellites_data.csv"
+#define SATELLITE_ORBIT_ASSETS_PATH ASSETS_PATH"/satellites_orbit.csv"
 
 std::vector<std::vector<std::string>> loadCSV(const std::string& filename) {
 	std::vector<std::vector<std::string>> data;
@@ -69,26 +64,22 @@ void loadPlanets(std::vector<Body> &bodies)
 	// Skip the first row
 	planetData.erase(planetData.begin());
 
-	Body sun = {
-		"Sun",
-		696340000.0f,
-		40.0f,
-        MASS_SUN,
-		YELLOW,
-		{ 0, 0, 0 },
-		{ 0, 0, 0 }
-	};
+	Body sun = Body(true);
+
+	sun.name = "Sun";
+	sun.mass = MASS_SUN;
+	sun.radius = RADIUS_SUN;
+	sun.color = YELLOW;
 
 	bodies.push_back(sun);
 
 	for (auto& row : planetData)
 	{
-		Body body;
+		Body body = Body(true);
 		body.name = row[PLANET_NAME_INDEX];
 		body.mass = std::stof(row[PLANET_MASS_INDEX]) * MASS_FACTOR;
 		body.radius = (std::stof(row[PLANET_DIAMETER_INDEX]) / 2.0f) * 1000.f;
 		body.position = { 0, 0,0 };
-		body.displayRadius = 2.0f;
 
         double dist = std::stod(row[PLANET_DISTANCE_INDEX]) * DISTANCE_FACTOR;
 
@@ -182,12 +173,11 @@ void loadSatellites(std::vector<Body> &bodies)
 			continue;
 		}
 
-		Body satellite;
+		Body satellite = Body(false);
 
 		satellite.name = name;
 		satellite.mass = (gm * GM_FACTOR) / GRAV_CONST ;
 		satellite.radius = radius * 1000.0f;
-		satellite.displayRadius = 1.f;
 
 		auto parent_body = std::find_if(bodies.begin(), bodies.end(), [&](const Body& body) {
 			return body.name == parent;

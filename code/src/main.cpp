@@ -13,12 +13,12 @@
 #include <thread>
 #include "Cursor.h"
 #include "Camera.h"
+#include "Consts.h"
 
 #define WINDOW_TITLE "nSim"
 #define USE_SPINLOCK_TIMER true
 
-#define UNIT_SIZE 10000000.0f // 1 unit = 1,000,000 m
-#define GRAV_CONST 6.67430e-11f
+
 
 struct GraphicsDebugger
 {
@@ -32,7 +32,7 @@ GraphicsDebugger graphicsDebugger;
 
 void GraphicsDebuggerUI()
 {
-	ImGui::Begin("Graphics Debugger", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Begin("Graphics Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	{
 
 		ImGui::Checkbox("Show Wireframe", &graphicsDebugger.showWireframe);
@@ -56,15 +56,14 @@ void DrawBody(Body& body)
 {
     auto pos = body.getDisplayPosition();
 	if (graphicsDebugger.showWireframe)
-		DrawSphereWires(pos, body.displayRadius, 10, 10, body.color);
+		DrawSphereWires(pos, body.getEffectiveRadius(), 10, 10, body.color);
 	else
-		DrawSphereEx(pos, body.displayRadius, 32, 32, body.color);
+		DrawSphereEx(pos, body.getEffectiveRadius(), 32, 32, body.color);
 
 	for (size_t i = 1; i < body.trailCount(); i++)
 	{
-		DrawLine3D(body.trail.data[i - 1], body.trail.data[i], body.color);
+		DrawLine3D(body.trail[i - 1], body.trail[i], body.color);
 	}
-
 }
 
 void BodyDebuggerUI(Body& body)
@@ -84,7 +83,7 @@ void BodyDebuggerUI(Body& body)
 
 		for (size_t i = 0; i < body.trailCount(); i++)
 		{
-			Vector3& point = body.trail.data[i];
+			Vector3& point = body.trail[i];
 			ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
 		}
 
@@ -179,34 +178,34 @@ struct bodySettings
 	ImVec4 color = { 1, 1, 1, 1 };
 };
 
-void NewBodyDebuggerUI()
-{
-
-	ImGui::SetNextWindowSize({ 300, 180 });
-	ImGui::Begin("New Body");
-
-	static bodySettings tempBody;
-
-	ImGui::InputText("Name", &tempBody.name);
-	ImGui::InputFloat("Orbit Height", &tempBody.orbitHeight);
-	ImGui::InputFloat("Radius", &tempBody.radius);
-	ImGui::InputFloat("Mass", &tempBody.mass);
-	ImGui::ColorEdit4("Color", &tempBody.color.x);
-
-	if (ImGui::Button("Create"))
-	{
-		Body newBody = {
-			tempBody.name,
-			tempBody.orbitHeight,
-			0.0f,
-			tempBody.radius,
-			rlImGuiColors::Convert(tempBody.color),
-		};
-		tempBody = {};
-		bodies.push_back(newBody);
-	}
-	ImGui::End();
-}
+//void NewBodyDebuggerUI()
+//{
+//
+//	ImGui::SetNextWindowSize({ 300, 180 });
+//	ImGui::Begin("New Body");
+//
+//	static bodySettings tempBody;
+//
+//	ImGui::InputText("Name", &tempBody.name);
+//	ImGui::InputFloat("Orbit Height", &tempBody.orbitHeight);
+//	ImGui::InputFloat("Radius", &tempBody.radius);
+//	ImGui::InputFloat("Mass", &tempBody.mass);
+//	ImGui::ColorEdit4("Color", &tempBody.color.x);
+//
+//	if (ImGui::Button("Create"))
+//	{
+//		Body newBody = {
+//			tempBody.name,
+//			tempBody.orbitHeight,
+//			0.0f,
+//			tempBody.radius,
+//			rlImGuiColors::Convert(tempBody.color),
+//		};
+//		tempBody = {};
+//		bodies.push_back(newBody);
+//	}
+//	ImGui::End();
+//}
 
 void CameraSettingsDebuggerUI()
 {
@@ -340,7 +339,9 @@ void simulate()
             for (Body& body : bodies)
             {
                 body.position += body.velocity;
-                if (performanceStats.secondsPassed % (60 * 60) == 0) {
+
+				int stepSize = body.isPlanet ? PLANET_TRAIL_STEP : SATELLITE_TRAIL_STEP;
+                if (performanceStats.secondsPassed % stepSize == 0) {
                     body.appendTrail(body.getDisplayPosition());
                 }
             }
@@ -430,9 +431,9 @@ int main(void)
 			std::vector<std::tuple<Body, float>> hitBodies;
 			for (Body& body : bodies)
 			{
-				if (testRayHit(pos.position, pos.direction, body.getDisplayPosition(), body.displayRadius))
+				if (testRayHit(pos.position, pos.direction, body.getDisplayPosition(), body.getEffectiveRadius()))
 				{
-					float dist = distanceToSphere(pos.position, pos.direction, body.getDisplayPosition(), body.displayRadius);
+					float dist = distanceToSphere(pos.position, pos.direction, body.getDisplayPosition(), body.getEffectiveRadius());
 					hitBodies.emplace_back(body, dist);
 				}
 			}
@@ -460,7 +461,7 @@ int main(void)
 
 		EndMode3D();
 		GraphicsDebuggerUI();
-		NewBodyDebuggerUI();
+		//NewBodyDebuggerUI();
 		CameraSettingsDebuggerUI();
 		SimulationSettingsDebuggerUI();
 		FocusSelectDebugUI();
