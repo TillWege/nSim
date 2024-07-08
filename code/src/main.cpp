@@ -15,7 +15,7 @@
 struct GraphicsDebugger
 {
 	bool showWireframe = false;
-	bool showGrid = true;
+	bool showGrid = false;
 	int gridSize = 20;
 	int maxFPS = 100;
 };
@@ -48,14 +48,16 @@ void DrawBody(Body& body)
 {
     auto pos = body.getDisplayPosition();
 	if (graphicsDebugger.showWireframe)
-		DrawSphereWires(pos, body.getEffectiveRadius(), 10, 10, body.color);
+		DrawSphereWires(pos, body.getEffectiveRadius(), 16, 16, body.color);
 	else
-		DrawSphereEx(pos, body.getEffectiveRadius(), 32, 32, body.color);
+		DrawSphereEx(pos, body.getEffectiveRadius(), 16, 16, body.color);
 
 	for (size_t i = 1; i < body.trailCount(); i++)
 	{
 		DrawLine3D(body.trail[i - 1], body.trail[i], body.color);
 	}
+
+	DrawLine3D(body.trail[body.trailCount() - 1], pos, body.color);
 }
 
 void BodyDebuggerUI(Body& body)
@@ -221,6 +223,9 @@ void CameraSettingsDebuggerUI()
 		ImGui::InputFloat3("Position", &cameraSettings.camera.position.x);
 		ImGui::InputFloat3("Target", &cameraSettings.camera.target.x);
 		ImGui::InputFloat3("Up", &cameraSettings.camera.up.x);
+
+		ImGui::DragFloat3("Sphere Coord", &cameraSettings.coord.r);
+
 		ImGui::SliderFloat("Fovy", &cameraSettings.camera.fovy, 30.0f, 90.0f);
 
 		ImGui::End();
@@ -376,7 +381,7 @@ int main(void)
 		BeginDrawing();
 		rlImGuiBegin();
 		ClearBackground(BLACK);
-		rlSetClipPlanes(0.01f, cameraSettings.camera.position.y * 2.0f);
+		rlSetClipPlanes(0.01f, cameraSettings.coord.r * 2.0f);
 
 		const char* text = "Planet Sim";
 		const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
@@ -391,15 +396,19 @@ int main(void)
 		BeginMode3D(cameraSettings.camera);
 
 		if (graphicsDebugger.showGrid)
-			DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 10.f);
+			DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 100.f);
 
-		cameraSettings.update();
+		auto focusPos = focusBody->getDisplayPosition();
 
+		simulationSettings.paused = true;
 		for (Body& body : bodies)
 		{
 			DrawBody(body);
 			//BodyDebuggerUI(body);
 		}
+		simulationSettings.paused = false;
+
+		cameraSettings.update(focusPos);
 
 
 		if (IsMouseButtonPressed(0))
@@ -425,18 +434,7 @@ int main(void)
 		}
 
 
-        auto focusPos = focusBody->getDisplayPosition();
-		cameraSettings.camera.target = {
-			focusPos.x,
-            focusPos.y,
-            focusPos.z
-		};
 
-		cameraSettings.camera.position = {
-			focusPos.x,
-			cameraSettings.camera.position.y,
-			focusPos.z
-		};
 
 
 		EndMode3D();
