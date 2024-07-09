@@ -1,24 +1,3 @@
-#import "@preview/charged-ieee:0.1.0": ieee
-
-// #show: ieee.with(
-//   title: [Simulation von Gravitation im Sonnensystem],
-//   abstract: [Die Bewegung der Sterne und Planeten fasziniert die Menschheit schon seit Urzeiten. In diesem Paper wird eine Methode zur Simulation der Gravitation im Sonnensystem vorgestellt, welche physikalisch akkurate Daten verwendet, um die Bewegung der Planeten zu berechnen. Die Simulation wird in C++ implementiert und visualisiert. 
-//   ],
-//   authors: (
-//     (
-//       name: "Till Wegener (28891)",
-//       location: [Moers, Deutschland],
-//       email: "till.wegener@hsrw.org",
-//       organization: "Hochschule Rhein-Waal\nFakultät Kommunikation und Umwelt\nMethoden und Werkzeuge der modernen Astronomie"
-//     ),
-//   ),
-
-//   index-terms: ("Simulation", "Gravitation", "Sonnensystem", "C++", "Visualisierung"),
-//   bibliography: bibliography("sources.yml", title: "Quellen", style: "ieee"),
-// )
-
-// #outline()
-
 #import "template.typ": *
 
 #show: project.with(
@@ -42,8 +21,7 @@
 
 #align(center)[#heading("Abstract", numbering: none, outlined: false)]
 
-#block([Die Bewegung der Sterne und Plan
-eten fasziniert die Menschheit schon seit Urzeiten. In diesem Paper wird eine Methode zur Simulation der Gravitation im Sonnensystem vorgestellt, welche physikalisch akkurate Daten verwendet, um die Bewegung der Planeten zu berechnen. Die Simulation wird in C++ implementiert und visualisiert. ])
+#block([Die Bewegung der Sterne und Planeten fasziniert die Menschheit schon seit Urzeiten. In diesem Paper wird eine Methode zur Simulation der Gravitation im Sonnensystem vorgestellt, welche physikalisch akkurate Daten verwendet, um die Bewegung der Planeten zu berechnen. Die Simulation wird in C++ implementiert und visualisiert. ])
 
 Schlagwörter: _Simulation_, _Gravitation_, _Sonnensystem_, _C++_, _Visualisierung_
 
@@ -57,27 +35,27 @@ Schlagwörter: _Simulation_, _Gravitation_, _Sonnensystem_, _C++_, _Visualisieru
 
 
 = Einleitung
-Die Planeten in unserem Sonnensystem folgen wie alle anderen Objekt im Universum den Phsyikalischen Grundgesetzen. Für die Bewegungen der Planeten ist primär die Gratitationskraft verantwortlich. Durch das verstehen dieser Kraft ist es uns möglich, die Bewegungen der Planeten zu simulieren. 
+Die Planeten in unserem Sonnensystem folgen wie alle anderen Objekt im Universum den physikalischen Grundgesetzen. Für die Bewegungen der Planeten ist primär die Gravitationskraft verantwortlich. Durch das verstehen dieser Kraft ist es uns möglich, die Bewegungen der Planeten zu simulieren. 
 
 #block()
 
-Dieses Paper verwendet diese Grundgestze um eine Simulation zu entwickeln, welche die Bewegungen der Planeten im Sonnensystem berechnet. 
+Dieses Paper verwendet diese Grundgesetze um eine Simulation zu entwickeln, welche die Bewegungen der Planeten im Sonnensystem berechnet. 
 
 = Historischer Kontext
 
-Im laufe der Zeit haben viele Phsyiker und Astronomen sich mit der Bewegung der Planeten beschäftigt. Über die Jarhunderte wurden viele Modelle entwickelt welche nah am heutigen Stand der Wissenschaft sind. Im folgenden werden einige dieser Modelle vorgestellt.
+Im laufe der Zeit haben viele Physiker und Astronomen sich mit der Bewegung der Planeten beschäftigt. Über die Jahrhunderte wurden viele Modelle entwickelt welche nah am heutigen Stand der Wissenschaft sind. Im folgenden werden einige dieser Modelle vorgestellt.
 
 
 #block([
-  1. Im 16ten Jahrhundert entwickelte Nikolaus Kopernikus mit _Über die Umlaufbahnen der Himmelssphären_ @kopernicus das erste Modell, welches den heutigen erkenntnissen nahe kommt. Er beschrieb die Bewegung der Planeten dardurch, dass alle Planeten aufeinander Gravitation ausüben.
+  1. Im 16ten Jahrhundert entwickelte Nikolaus Kopernikus mit _Über die Umlaufbahnen der Himmelssphären_ @kopernicus das erste Modell, welches den heutigen Erkenntnissen nahe kommt. Er beschrieb die Bewegung der Planeten dadurch, dass alle Planeten aufeinander Gravitation ausüben.
 ])
 
 #block([
-  2. Zu beginn des 17ten Jahrhundertes entwickelte Johannes Kepler mit _Astronomia nova_ @kepler ein Modell, welches die Bewegung der Planeten genauer beschrieb. Seine Axiome besaten, dass die Planeten sich auf Ellipsen bewegen, und körper sich gegenseitig anziehen.
+  2. Zu beginn des 17ten Jahrhunderts entwickelte Johannes Kepler mit _Astronomia nova_ @kepler ein Modell, welches die Bewegung der Planeten genauer beschrieb. Seine Axiome besagten, dass die Planeten sich auf Ellipsen bewegen, und kKörper sich gegenseitig anziehen.
 ])
 
 #block([
-  3. 1644 entwickelte Isac Newton mit _Philosophiæ Naturalis Principia Mathematica_ @newton das Modell, welches bis heute zur beschreibung der Gravitation verwendet wird. Seine Gravitationsgesetze beschreiben, wie sich Körper aufeinander anziehen.
+  3. 1644 entwickelte Isac Newton mit _Philosophiæ Naturalis Principia Mathematica_ @newton das Modell, welches bis heute zur Beschreibung der Gravitation verwendet wird. Seine Gravitationsgesetze beschreiben, wie sich Körper aufeinander anziehen.
 ])
 
 = Mathematische Grundlagen
@@ -86,7 +64,7 @@ Wie durch Newton beschreiben, wirkt auf jeden Körper eine Gravitationskraft, we
 
 $ F_G = G * (m_1 * m_2)/r^2 $
 
-beschrieben werden. Hierbei ist $F_G$ die resultierende Gravitationskraft, $G$ die Gravitationskonstante ($6.67*10^(-11)m^3/("kg"*s^2)$), $m_1$ und $m_2$ die Massen der Körper und $r$ der Abstand zwischen den Körpern. Die Kraft wirket hierbei entlang der Verbindungslinie der Körper.
+beschrieben werden. Hierbei ist $F_G$ die resultierende Gravitationskraft, $G$ die Gravitationskonstante ($6.67*10^(-11)m^3/("kg"*s^2)$), $m_1$ und $m_2$ die Massen der Körper und $r$ der Abstand zwischen den Körpern. Die Kraft wirkt hierbei entlang der Verbindungslinie der Körper.
 
 #linebreak()
 
@@ -103,7 +81,7 @@ Im folgenden wird eine Methode vorgestellt, welche Eulers Methode verwendet, um 
 #linebreak()
 
 Eulers Methode ist eine numerische Methode, welche einen Differentialgleichungssystem durch diskrete Schritte approximiert. Die Methode ist einfach zu implementieren, kann jedoch aufgrund ihrer funktionsweise ungenau sein.
-Als erstes bestimmen wir unseren diskreten Zeitschritt $Delta t$. Dannach bestimmen die Startwerte für die Position und Geschwindigkeit der Körper im Raum. 
+Als erstes bestimmen wir unseren diskreten Zeitschritt $Delta t$. Danach bestimmen die Startwerte für die Position und Geschwindigkeit der Körper im Raum. 
 
 #linebreak()
 
@@ -116,25 +94,25 @@ Wenn wir dieses Verfahren nun für alle Körper im System durchführen, können 
 = Vorbereitung
 
 == Datensätze <dataset>
-Für die Simulation des Sonnensytems benötigen wir Daten über die Planeten und ihre diversen Satellieten. Die wichtigen Daten für die Simulation sind die Masse der Körper, die Position der Körper im Raum und die Geschwindigkeit der Körper. Diese Daten können aus diversen Quellen bezogen werden. Für die Planeten wurden die Daten aus dem Projekt _Nasa Data Scraper_ von _Devstronomy_ @planets auf github verwendet. Das gleiche Projekt beinhält auch einen Datensatz für die Satellieten der Planeten. Dieser ist allerdings für unsere Simulation nicht geeignet, da keine Informationen zu Position und Geschwindigkeit der Satellieten enthalten sind.
+Für die Simulation des Sonnensystems benötigen wir Daten über die Planeten und ihre diversen Satelliten. Die wichtigen Daten für die Simulation sind die Masse der Körper, die Position der Körper im Raum und die Geschwindigkeit der Körper. Diese Daten können aus diversen Quellen bezogen werden. Für die Planeten wurden die Daten aus dem Projekt _Nasa Data Scraper_ von _Devstronomy_ @planets auf Github verwendet. Das gleiche Projekt beinhaltet auch einen Datensatz für die Satelliten der Planeten. Dieser ist allerdings für unsere Simulation nicht geeignet, da keine Informationen zu Position und Geschwindigkeit der Satelliten enthalten sind.
 
 #linebreak()
 
-Die Daten der Satellieten wurden vom _Solar System Dynamics_ Projekt des _Jet Propulsion Laboratory_ der _NASA_ @ssd verwendet. Vom _SSD_ Projekt können wir sowohl die Phsyikalischen Daten der Satellieten @satellite_phys, als auch die orbitale Parameter der Satellieten @satellite_orb beziehen. Diese Daten beinhalten die _Semi Major Axis_ und weitere Parameter, welche für die Simulation benötigt werden.
+Die Daten der Satelliten wurden vom _Solar System Dynamics_ Projekt des _Jet Propulsion Laboratory_ der _NASA_ @ssd verwendet. Vom _SSD_ Projekt können wir sowohl die Physikalischen Daten der Satelliten @satellite_phys, als auch die orbitale Parameter der Satelliten @satellite_orb beziehen. Diese Daten beinhalten die _Semi Major Axis_ und weitere Parameter, welche für die Simulation benötigt werden.
 
 == Wahl der Programmiersprache
 Da für diese Simulation eine große Anzahl an Berechnungen durchgeführt werden muss, stellte die Wahl der Programmiersprache eine wichtige Entscheidung dar. Für diese Simulation wurde deshalb C++ gewählt. C++ ist eine schnelle kompilierte Sprache. 
 
 == Wahl von Hilfsbibliotheken
-Zur Visualisierung unserer Simulation benötigen wir eine Bibliothek, welche das darstellen von 3D-Objekten ermöglicht. Hierzu wurde die Bibliothek _Raylib_ @Raylib verwendet. Raylib ist eine C-Bibliothek, welche das erstellen von 2D und 3D Anwendungen ermöglicht. Neben der Darstellung von 3D-Objekten war es auch noch wichtig, dass wir einfache Interface-Elemente anzeigen können. Hierzu wird die Bibliothek _Dear ImGui_ @Imgui verwendet. ImGui ist eine C++ Bibliothek, welche in der Spieleentwicklung verwendet wird, um einfache Interface-Elemente anzuzeigen. Um diese beiden Bibliotheken zusammen zu verwedne, wurde das Projekt _rlImGui_ @Rlimgui verwendet.
+Zur Visualisierung unserer Simulation benötigen wir eine Bibliothek, welche das darstellen von 3D-Objekten ermöglicht. Hierzu wurde die Bibliothek _Raylib_ @Raylib verwendet. Raylib ist eine C-Bibliothek, welche das erstellen von 2D und 3D Anwendungen ermöglicht. Neben der Darstellung von 3D-Objekten war es auch noch wichtig, dass wir einfache Interface-Elemente anzeigen können. Hierzu wird die Bibliothek _Dear ImGui_ @Imgui verwendet. ImGui ist eine C++ Bibliothek, welche in der Spiele-entwicklung verwendet wird, um einfache Interface-Elemente anzuzeigen. Um diese beiden Bibliotheken zusammen zu verwenden, wurde das Projekt _rlImGui_ @Rlimgui verwendet.
 
-Die Bibliotheken _ImGui_ und _rlImGui_ wurden als Submodule in das Projekt eingebunden. _Raylib_ wird während der kompilierung des Projektes heruntergeladen und verwendet. Hierzu wurde das Programm _Cmake_ @cmake verwendet. Cmake ist ein Build-System, welches es ermöglicht, C und C++ Projekte plattformunabhängig zu kompilieren.
+Die Bibliotheken _ImGui_ und _rlImGui_ wurden als Submodule in das Projekt eingebunden. _Raylib_ wird während der Kompilierung des Projektes heruntergeladen und verwendet. Hierzu wurde das Programm _Cmake_ @cmake verwendet. Cmake ist ein Build-System, welches es ermöglicht, C und C++ Projekte plattformunabhängig zu kompilieren.
 
 = Implementierung
 
 == Grundlegendes
 
-Die Implementierung der Simulation folgt dem zuvor beschriebenen Ablauf. In der _Main_-Funktion der Simulation werden zuerst die nötigen Bibliotheken initialisiert. Für dieses Projekt war es nötig, einen eigenen _Vektor_-Datentypen zu verwenden. Die Gründe hierzu, werden in @32bit erläutert. Dieser _SciVec_ verwendet 64-Bit gleitkomma-Zahlen, um möglichst preziese Berechnungen zu ermöglichen. Der Datentyp und die dazugehörigen Funktionen zur Addition, Subtraktion, Multiplikation und Skalierung können in _SciVec.h_ geufunden werden. Die Körper des Sonnensystems werden mithilfe eines Datentypens _Body_ abgebildet. In _Body.h_ wird das _struct_ _Body_ wie folgt definiert:
+Die Implementierung der Simulation folgt dem zuvor beschriebenen Ablauf. In der _Main_-Funktion der Simulation werden zuerst die nötigen Bibliotheken initialisiert. Für dieses Projekt war es nötig, einen eigenen _Vektor_-Datentypen zu verwenden. Die Gründe hierzu, werden in @32bit erläutert. Dieser _SciVec3_ verwendet 64-Bit gleitkomma-Zahlen, um möglichst präzise Berechnungen zu ermöglichen. Der Datentyp und die dazugehörigen Funktionen zur Addition, Subtraktion, Multiplikation und Skalierung können in _SciVec3.h_ gefunden werden. Die Körper des Sonnensystems werden mithilfe eines Datentypen _Body_ abgebildet. In _Body.h_ wird das _struct_ _Body_ wie folgt definiert:
 
 #figure([```cpp
 struct Body
@@ -153,29 +131,29 @@ struct Body
 	...
 }
 ```], caption: "Definition des _Body_-Datentyps")
-Die Felder _radius_, _mass_, _postion_, und _velocity_ sind für die Simulation am wichtigesten. Für jedes Objekt wird außerdem ein _Name_, eine _Farbe_, und eine Liste an Satllieten gespeichert. Die Simulation verwaltet eine danamische Liste (_std::vector_) an _Body_-Objekten. Diese Liste stellt den aktuellen zustand der Simulation da. Um diese Liste nun mit Daten zu füllen, müssen wir unsere Datensätze einladen. 
+Die Felder _radius_, _mass_, _postion_, und _velocity_ sind für die Simulation am wichtigsten. Für jedes Objekt wird außerdem ein _Name_, eine _Farbe_, und eine Liste an Satelliten gespeichert. Die Simulation verwaltet eine dynamische Liste (_std::vector_) an _Body_-Objekten. Diese Liste stellt den aktuellen zustand der Simulation da. Um diese Liste nun mit Daten zu füllen, müssen wir unsere Datensätze einladen. 
 
 == Laden der Datensätze
 
-Die Datei _Loader.h_ beinhaltet die Funktionen, welche die Datensätze aus @dataset lädt. Die Funktion _loadPlanets_ lädt die _planets.csv_-Datei aus dem _Assets_-Ordner. Zuerst erstellt diese Funktion allerdings die Sonne, welche nicht im Datensatz enthalten ist. Hierfür wurden die wichtigsten Werte in _Consts.h_ definiert. Dannach iteriert die Funktion über die Zeilen der CSV-Datei und erstellt für jede Zeile ein _Body_-Objekt. Hierbei ist es wichtig, die einzelnen Werte in die Korrekten Einheiten umzuwandeln. Für diese Simulation wurde die Entscheidung getroffen, alle Werte in SI-Einheiten zu speichern. Insbesonders für die Datenwerte _Mass_ war es nötig, 64-Bit Gleitkommazahlen zu verwenden. Um die Visualisierung besser zu gestalten, wurden allen Planeten eine individuelle Farbe zugeordnet. 
+Die Datei _Loader.h_ beinhaltet die Funktionen, welche die Datensätze aus @dataset lädt. Die Funktion _loadPlanets_ lädt die _planets.csv_-Datei aus dem _Assets_-Ordner. Zuerst erstellt diese Funktion allerdings die Sonne, welche nicht im Datensatz enthalten ist. Hierfür wurden die wichtigsten Werte in _Consts.h_ definiert. Danach iteriert die Funktion über die Zeilen der CSV-Datei und erstellt für jede Zeile ein _Body_-Objekt. Hierbei ist es wichtig, die einzelnen Werte in die Korrekten Einheiten umzuwandeln. Für diese Simulation wurde die Entscheidung getroffen, alle Werte in SI-Einheiten zu speichern. Insbesondere für die Datenwerte _Mass_ war es nötig, 64-Bit Gleitkommazahlen zu verwenden. Um die Visualisierung besser zu gestalten, wurden allen Planeten eine individuelle Farbe zugeordnet. 
 
-Neben der bereits genannten Daten, war die bestimmung der initialen Position und Geschwindigkeit der Körper eine wichtige Entscheidung. Der Datensatz der Planeten beinhält sowohl Werte für den _Aphelion_, den _Perihelion_, die _Inclination_ und die _Exzentrizität_ der Planeten. Des Weiteren wurde ein Wert für die durchschnittliche _orbital_velocity_ angegeben.
+Neben der bereits genannten Daten, war die Bestimmung der initialen Position und Geschwindigkeit der Körper eine wichtige Entscheidung. Der Datensatz der Planeten beinhaltet sowohl Werte für den _Aphelion_, den _Perihelion_, die _Inclination_ und die _Exzentrizität_ der Planeten. Des Weiteren wurde ein Wert für die durchschnittliche _orbital_velocity_ angegeben.
 
 // TODO Richtig implmentieren und dann beschreiben
 
 #block()
 
-Die Funktion _loadSatallites_ funktioniert ähnlich wie _loadPlanets_. Hierbei wird die Dateien _satellites_data.csv_ und _satellites_orbit.csv_ kombiniert, um die Satellieten der Planeten zu erstellen. Für jeden Satelliet wird zuerst der _Parent_-Körper gesucht. Dannach werden die weiteren Planetaren informationen bestimmt. Dieser Datensatz weißt die Besonderheit auf, dass nicht die Masse der Objekte angegeben ist, sondern der _Standard Gravitational Parameter_ $mu$. Dieser Wert ist definiert als $mu = G * m$, wobei $G$ die Gravitationskonstante ist. Um die Masse der Satellieten zu bestimmen, wird der Wert $mu$ durch $G$ geteilt. 
+Die Funktion _loadSatallites_ funktioniert ähnlich wie _loadPlanets_. Hierbei wird die Dateien _satellites_data.csv_ und _satellites_orbit.csv_ kombiniert, um die Satelliten der Planeten zu erstellen. Für jeden Satellit wird zuerst der _Parent_-Körper gesucht. Danach werden die weiteren Planetaren Informationen bestimmt. Dieser Datensatz weißt die Besonderheit auf, dass nicht die Masse der Objekte angegeben ist, sondern der _Standard Gravitational Parameter_ $mu$. Dieser Wert ist definiert als $mu = G * m$, wobei $G$ die Gravitationskonstante ist. Um die Masse der Satelliten zu bestimmen, wird der Wert $mu$ durch $G$ geteilt. 
 
-Die bestimmung der initialen Position und Geschwindigkeit der Satellieten ist etwas komplizierter. Hierzu müssen wir nicht nur die Orbitalen Parameter des Satllieten, sondern auch die des Parent-Körpers verwenden.
+Die Bestimmung der initialen Position und Geschwindigkeit der Satelliten ist etwas komplizierter. Hierzu müssen wir nicht nur die Orbitalen Parameter des Satelliten, sondern auch die des Parent-Körpers verwenden.
 
 // TODO Richtig implmentieren und dann beschreiben
 
 == Aufteilung von Simulation und Visualisierung
-Die Simulation und Visualisierung sind zwei verschiedene Aufgaben mit unterschiedlichen Zielen. Die Visualisierung in geregelten Abstände den Zustand der Simulation darstellen. Dieser Vorgang ist größtenteils abhängig von der Grafikkarte. Die Simulation hingegen ist abhängig von der CPU. Ideallerweise sind die beiden Prozesse soweit wie möglich voneinander getrennt. Dies wurde in diesem Projekt so realisiert, dass die Simulation in einem getrennten _Thread_ läuft. Die Visualisierung hingegen läuft im _Main_-Thread der Anwendung. Beide Threads greifen auf die selbe Liste an Daten zu, weshalb es nötig war, die Zugriffe auf diese Liste zu synchronisieren. Um eine möglichst geringe Latenz für den Nutzer zu ermöglichen, hat die Visualisierung die priämre Kontrolle über die Liste. Sie kann angeben wann die Simulation auf die Liste zugreifen kann, indem die Simulation temporär pausiert wird.
+Die Simulation und Visualisierung sind zwei verschiedene Aufgaben mit unterschiedlichen Zielen. Die Visualisierung in geregelten Abstände den Zustand der Simulation darstellen. Dieser Vorgang ist größtenteils abhängig von der Grafikkarte. Die Simulation hingegen ist abhängig von der CPU. Idealerweise sind die beiden Prozesse soweit wie möglich voneinander getrennt. Dies wurde in diesem Projekt so realisiert, dass die Simulation in einem getrennten _Thread_ läuft. Die Visualisierung hingegen läuft im _Main_-Thread der Anwendung. Beide Threads greifen auf die selbe Liste an Daten zu, weshalb es nötig war, die Zugriffe auf diese Liste zu synchronisieren. Um eine möglichst geringe Latenz für den Nutzer zu ermöglichen, hat die Visualisierung die primäre Kontrolle über die Liste. Sie kann angeben wann die Simulation auf die Liste zugreifen kann, indem die Simulation temporär pausiert wird.
 
 == Implementieren der Simulation
-Die Simualtion ist der Kern der Anwendung. Um möglichst große Zeiträume simluieren zu können, ist es also nötig, diesen Vorgang möglichst effizient zu implementieren. Die Simulation wird in der Funktion _simulate_ in _main.cpp_ implementiert. Diese Funktion wird in einem eigenen _Thread_ ausgeführt. Dieser Thread arbeitet komplett unabhängig von der Visualisierung. Solang die Simulation nicht pausiert ist, entwedet durch den Nutzer, oder durch die Visualisierung, wird die Simulation in einer Schleife ausgeführt. Im folgenden wird eine vereinfachte Version der Funktion _simulate_ gezeigt:
+Die Simulation ist der Kern der Anwendung. Um möglichst große Zeiträume simulieren zu können, ist es also nötig, diesen Vorgang möglichst effizient zu implementieren. Die Simulation wird in der Funktion _simulate_ in _main.cpp_ implementiert. Diese Funktion wird in einem eigenen _Thread_ ausgeführt. Dieser Thread arbeitet komplett unabhängig von der Visualisierung. Solang die Simulation nicht pausiert ist, entweder durch den Nutzer, oder durch die Visualisierung, wird die Simulation in einer Schleife ausgeführt. Im folgenden wird eine vereinfachte Version der Funktion _simulate_ gezeigt:
 
 #figure([```cpp
 void simulate()
@@ -234,7 +212,7 @@ void draw()
 }
 ```], caption: "Vereinfachte Version der Funktion draw")
 
-Diese Funktion wird solange in einer Schleife ausgeführt, bis die Anwendung geschlossen wird. Nach dem starten des 3-D-Renderers wird der Hintergrund gelöscht. Als nächstes wird die _ClipPlane_@clipplane angepasst. Dies ist der Abstand von Geometrie zur Kamera ab welchem Objekte nichtmehr dargestellt werden. Aufgrund der großen Werte welche duch das verwenden von physikalisch akkuraten Werten auftreten, ist es nötig diesen Wert anhan der aktuellen Kameraeinstellungen anzupassen.
+Diese Funktion wird solange in einer Schleife ausgeführt, bis die Anwendung geschlossen wird. Nach dem starten des 3-D-Renderers wird der Hintergrund gelöscht. Als nächstes wird die _ClipPlane_@clipplane angepasst. Dies ist der Abstand von Geometrie zur Kamera ab welchem Objekte nichtmehr dargestellt werden. Aufgrund der großen Werte welche durch das verwenden von physikalisch akkuraten Werten auftreten, ist es nötig diesen Wert anhand der aktuellen Kameraeinstellungen anzupassen.
 
 Nachdem diese Vorbereitungen getroffen wurden, werden die einzelnen planetarischen Objekte gezeichnet. Die Funktion _DrawBody_ nimmt die aktuelle Position des Körpers und stellt diesen mithilfe einer gefärbten Kugel in 3D dar.
 
@@ -242,13 +220,13 @@ Nachdem diese Vorbereitungen getroffen wurden, werden die einzelnen planetarisch
   #image("./assets/sun.jpg", width: 80%)
 ], caption: "Sonne in nSim")
 
-Diese Methode kann nun verwendet werden um die Planeten und ihre Satellieten zu visualisieren. Ein Phänomen welches aufgrund dieser Art der Visualisierung auftritt, ist das die relative Bewegung und Position von Körpern zueinander schwer zu erkennen ist.
+Diese Methode kann nun verwendet werden um die Planeten und ihre Satelliten zu visualisieren. Ein Phänomen welches aufgrund dieser Art der Visualisierung auftritt, ist das die relative Bewegung und Position von Körpern zueinander schwer zu erkennen ist.
 
 #figure([
   #image("./assets/no_trails.jpg", width: 80%)
 ], caption: "Erde und Mond") <no_trails>
 
-Wie in @no_trails zu erkennen ist, gibt uns diese Visualisierung keine Anhaltspunkte für die Orientierung und Bewegung der Planeten. Ein weiters Problem war es, dass aufgrund der Skalierung der Visualisierung einige Satellieten sehr klein, und damit schwer zu erkennen wurden. Um diese Problematiken zu verringern wurden drei weitere Visualisierungen hinzugefügt.
+Wie in @no_trails zu erkennen ist, gibt uns diese Visualisierung keine Anhaltspunkte für die Orientierung und Bewegung der Planeten. Ein weiteres Problem war es, dass aufgrund der Skalierung der Visualisierung einige Satelliten sehr klein, und damit schwer zu erkennen wurden. Um diese Problematiken zu verringern wurden drei weitere Visualisierungen hinzugefügt.
 
 1. Astronomisches Gitter
 
@@ -258,13 +236,13 @@ Wie in @no_trails zu erkennen ist, gibt uns diese Visualisierung keine Anhaltspu
 
 Um ein besseres Gefühl für die relative Position und Rotation von Punkten im Raum zu geben, wurde ein optionales Gitter zur Visualisierung hinzugefügt. Dieses Gitter weißt eine Auflösung von $1/100 "AU"$, oder einem einhundertstel der Astronomischen Einheit da. Über die Einstellung kann auch die Größte des Gitters kontrolliert werden. Das Gitter wird zentriert über dem aktuell fokussierten Körper angezeigt.
 
-2. Transparente Selektoren für Satellieten
+2. Transparente Selektoren für Satelliten
 
 #figure([
   #image("./assets/selector.jpg")
 ], caption: "Mond mit transparenten Selektor") <selector>
 
-@selector Zeigt unseren Mond in Grau mit einem größeren halb-transparenten Slektor dadrüber. Der Selektor ermöglicht es, auch die kleinern planetarischen Objekte zu selektieren. Die Größe des Selektors ist dabei immernoch abhängig von dem Radius des Objektes, damit die Skalierung trotzdem akkurat bleibt.
+@selector Zeigt unseren Mond in Grau mit einem größeren halb-transparenten Selektor darüber. Der Selektor ermöglicht es, auch die kleinren planetarischen Objekte zu selektieren. Die Größe des Selektors ist dabei immer noch abhängig von dem Radius des Objektes, damit die Skalierung trotzdem akkurat bleibt.
 
 3. Historische Pfade
 
@@ -280,11 +258,11 @@ Um mit der Simulation zu interagieren wurden einfache Interface-Elemente benöti
 
 + Graphics Debugger: #linebreak() Fenster zum einstellen der grafischen Visualisierung. Hier können Dinge wie das Gitter, die Selektoren und Wireframe-Rendering aktiviert werden
 + Camera Settings: #linebreak() Fenster welches die Aktuellen Parameter der Camera anzeigt.
-+ Simulation Settings: #linebreak() Fenster welches die Konfiguration des Zeitschrittes erlauben. Über dieses Fenster kann auch die Simulation pausiert werden. Des Weiteren wird angezeigt, wie viele Sekunden, Minuten, Stunden und Tage bisher in der Simualtion vergangen sind.
++ Simulation Settings: #linebreak() Fenster welches die Konfiguration des Zeitschrittes erlauben. Über dieses Fenster kann auch die Simulation pausiert werden. Des Weiteren wird angezeigt, wie viele Sekunden, Minuten, Stunden und Tage bisher in der Simulation vergangen sind.
 + Focus Select: #linebreak() Fenster welches verwendet werden kann, um den aktuell fokussierten Körper zu wechseln.
 
 == Implementierung der Kamera
-Die Kamera selbst ist mithilfe von spherischen Koordinaten relativ zum aktuell fokussierten Körper ausgerichtet. Es ist möglich, mithilfe der Maus den horizontalen und vertikalen Winkel der Kamera relativ zum Körper anzupassen. Mithilfe des Mausrads kann der Abstand $r$ der Kamera zu diesem Kontrolliert werden. Die Kamera dieser Simulation richtet sich am aktuell fokussierten Planeten aus. Dementsprechen ist es nötig, die Kamera in jedem durchgang der Visualisierungs-Funktion zu aktualisieren. Dabei übernimmt die Kamera zuerst die Position des aktuell fokussierten Objektes. Dannach wird anhand der spherischen Koordinaten $theta$ und $phi$ wie folgt die relative Position ermittelt:
+Die Kamera selbst ist mithilfe von sphärischen Koordinaten relativ zum aktuell fokussierten Körper ausgerichtet. Es ist möglich, mithilfe der Maus den horizontalen und vertikalen Winkel der Kamera relativ zum Körper anzupassen. Mithilfe des Mausrads kann der Abstand $r$ der Kamera zu diesem Kontrolliert werden. Die Kamera dieser Simulation richtet sich am aktuell fokussierten Planeten aus. Dementsprechend ist es nötig, die Kamera in jedem Durchgang der Visualisierungsfunktion zu aktualisieren. Dabei übernimmt die Kamera zuerst die Position des aktuell fokussierten Objektes. Danach wird anhand der sphärischen Koordinaten $theta$ und $phi$ wie folgt die relative Position ermittelt:
 
 $Delta_x = r * sin(theta) * cos(phi)$
 
@@ -304,14 +282,40 @@ $z = z_"planet" + Delta_z$
 bestimmt werden. Hierbei ist wichtig zu beachten, dass _OpenGL_, und damit auch _Raylib_, ein rechtshändiges Koordinatensystem verwenden, in welchem $y$ und nicht wie typisch $z$ die vertikale Achse ist.
 
 = Besonderheiten und Lösungen <problems>
+Die Simulation weißt eine vielzahl von Besonderheiten auf, welche die Implementation beeinflussen. Der wichtigste Faktor hierbei ist die Größte der verschiedenen verwendeten Werte. Da die Werte in SI-Einheiten vorliegen, sind die Werte für die Positionen und Geschwindigkeiten sehr groß. Die Masse der Sonne beispielsweise beträgt $1.989 * 10^30"kg"$. Die Distanz zwischen der Erde und der Sonne liegt bei $1.495 * 10^11m$. Aufgrund dieser großen Werte ist es nötig, die Visualisierung zu skalieren. Hierzu wurde der Faktor 1:1000000 gewählt. Dieser Faktor wird für alle Größen innerhalb der Visualisierung verwendet. Die Berechnung der Simulation findet allerdings trotzdem mit den ungekürzten Werten statt.
 
-== 32-Bit gleitkommazahlen <32bit>
-
-== Skalierung der Visualisierung <scale>
+== 32-Bit Gleitkommazahlen <32bit>
+Die Größenordnung der Werte führt dazu, dass wir Gleitkommazahlen verwenden müssen, um diese akkurat darzustellen. Eine reguläre 64-Bit Zahl hat einen Wertebereich von $-2^63$ bis $2^63-1$ oder von $plus.minus 9.22 * 10^18$. Damit wäre es nicht möglich, die meisten Berechnungen durchzuführen. Gleitkommazahlen nach IEEE-754@ieee können größere Zahlen darstellen. 32Bit Gleitkommazahlen haben einen Wertebereich von $plus.minus 3.40*10^38$. Dieser Wertebereich ist groß genug um unsere Berechnungen durchzuführen. Für Gleitkommazahlen ist allerdings nicht nur der Wertebereich, sondern auch die Genauigkeit wichtig. 32-Bit Gleitkommazahlen haben eine Genauigkeit von 7 Stellen. Für unsere Berechnungen ist dies nicht ausreichend. Deshalb wurde ein eigener Datentyp _SciVec3_ implementiert. Dieser Datentyp verwendet 64-Bit Gleitkommazahlen. Diese bieten eine Genauigkeit von 15 Stellen. Der Datentyp _SciVec3_ wird für alle Berechnungen innerhalb der Simulation verwendet. Nur für die Darstellung wird in den von _Raylib_ verwendeten _Vector3_-Datentypen umgewandelt.
 
 == Floating Origin <floating_origin>
+Auch nach den Anpassungen in @32bit treten allerdings noch Probleme bei der Visualisierung auf. Unsere skalierten Werte sind häufig länger als 7 Stellen. Dies führt aufgrund des Aufbaus von IEEE-754 Gleitkommazahlen, dass Genauigkeitsprobleme sichtbar werden. In diesem Fall können wir nicht wie zuvor den Datentypen anpassen, da moderne Grafikschnittstellen wie _OpenGL_ nur 32-Bit Gleitkommazahlen unterstützen. 
+
+Um dieses Problem zu lösen, wurde das Konzept des _Floating Origin_ eingeführt. Hierbei werden alle Objekte relativ zum aktuell fokussierten Körper dargestellt. Dies führt dazu, dass der fokussierten Bereich der Visualisierung immer im genausten Bereich der Gleitkommazahlen dargestellt werden. Die Logik hierfür ist wie folgt:
+
++ Die Position des aktuell fokussierten Körpers wird als Ursprung der Welt gesetzt.
++ Beim anzeigen der Körper wird die Position des fokussierten Körpers von der Position des Körpers abgezogen.
++ Die Kamera wird relativ zum fokussierten Körper positioniert.
+
+Da die gesamte Positionierung und Berechnung weiterhin mithilfe des _SciVec3_ in 64-Bit ausgeführt wird, sind die Berechnungen weiterhin akkurat. Erst nachdem diese Berechnungen durchgeführt wurden, werden die Werte in 32-Bit Gleitkommazahlen umgewandelt.
 
 = Ergebnisse <results>
+Ziel unserer Simulation war es, dass wir die Bewegung der Planeten simulieren und in 3D visualisieren können. Hierzu wurde das Programm _nSim_, ein n-Body Simulator, entwickelt.
+
+#figure(
+  image("./assets/nsim.png"),
+  caption: "nSim Simulation des inneren Sonnensystems"
+) <nsim1>
+
+@nsim1 Zeigt einen weiten Blick auf das innere Sonnensystem. Hier werden die Umlaufbahnen des Merkurs, der Venus, der Erde und des Mars um die Sonne sichtbar.
+
+#figure(
+  image("./assets/nsim1.png"),
+  caption: "nSim Simulation von Jupiter"
+) <nsim2>
+
+@nsim2 Zeigt die Simulation des Jupiter und seiner vier größten Monde. Hierbei ist zu erkennen, wie die Monde um den Jupiter kreisen.
+
+_nSim_ ermöglicht es, innerhalb kürzester Zeit die Bewegung der Planeten über Tage oder sogar Jahre hinweg zu simulieren. Hierzu werden diverse Open-Source Projekte verwendet. Der Code für dieses Projekt können auf _Github_ @github eingesehen werden.
 
 = Diskussion
 

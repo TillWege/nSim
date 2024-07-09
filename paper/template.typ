@@ -10,7 +10,7 @@
 
   // Title row.
   align(center)[
-    #block(text(weight: 700, 1.75em, title))
+    #block(text(weight: 500, 1.75em, spacing: 5pt, title))
     #v(1em, weak: true)
     #date
   ]

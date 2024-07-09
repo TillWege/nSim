@@ -70,3 +70,16 @@ clipplane:
   url: https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glClipPlane.xml
   date: 2024-07-08
   author: Khronos Group
+
+ieee:
+  title: IEEE Standard for Floating-Point Arithmetic
+  type: article
+  date: 2019
+  pages: 1-84
+  
+github:
+  title: nSim sourcecode
+  type: repository
+  url: https://github.com/tillwege/nSim.git
+  date: 2024-07-08
+
