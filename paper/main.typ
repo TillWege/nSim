@@ -174,6 +174,32 @@ Die Funktion folgt dem zuvor definierten Aufbau. Für jeden Körper wird die Gra
 Wichtig ist hierbei, dass die Berechnung von der globalen variable _delta_t_ abhängig ist. Diese Variable bestimmt den Zeitschritt der Simulation. Je kleiner dieser Wert ist, desto genauer ist die Simulation, jedoch auch langsamer. Je nach verfügbarer Rechenleistung kann dieser Wert auf bis zu 1s pro iteration gesetzt werden. Mehr hierzu in @results.
 
 == Implementieren der Visualisierung
+Mithilfe der Visualisierung können wir den momentanen Zustand der Simulation darstellen. Die primäre _draw_-loop der Simulation findet innerhalb der _main_-Funktion der Anwendung statt. Eine vereinfachte Version dieser Funktion sieht wie folgt aus:
+
+#figure([
+  ```cpp
+  void draw()
+  {
+    BeginDrawing3D();
+    ClearBackground(BLACK);
+    UpdateClipPlane();
+
+    for(body in bodies)
+    {
+      DrawSphere(body.position, body.radius, body.color);
+    }
+
+    UpdateCamera();
+    DrawInterface();
+
+    EndDrawing3D();
+  }
+  ```
+], caption: "Vereinfachte Version der Funktion _draw_")
+
+Diese Funktion wird solange in einer Schleife ausgeführt, bis die Anwendung geschlossen wird. Nach dem starten des 3-D-Renderers wird der Hintergrund gelöscht. 
+
+
 
 Ideen:
 - Visualisierung der Planeten

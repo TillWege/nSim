@@ -11,7 +11,6 @@
 #include "Camera.h"
 #include "Consts.h"
 
-
 struct GraphicsDebugger
 {
 	bool showWireframe = false;
@@ -23,7 +22,7 @@ struct GraphicsDebugger
 
 GraphicsDebugger graphicsDebugger;
 
-SciVec3 FloatingOrigin = { 0, 0, 0 };
+SciVec3 FloatingOrigin = {0, 0, 0};
 
 Vector3 realignVector(SciVec3 vec)
 {
@@ -32,8 +31,7 @@ Vector3 realignVector(SciVec3 vec)
 	SciVec3 diff_scaled = {
 		diff.x / UNIT_SIZE,
 		diff.y / UNIT_SIZE,
-		diff.z / UNIT_SIZE
-	};
+		diff.z / UNIT_SIZE};
 
 	return diff_scaled.toVector3();
 }
@@ -56,14 +54,12 @@ void GraphicsDebuggerUI()
 		{
 			SetTargetFPS(graphicsDebugger.maxFPS);
 		}
-
 	}
 	ImGui::End();
 }
 
 std::vector<Body> bodies;
 int focusIndex = 0;
-
 
 int getParentBodyIndex()
 {
@@ -84,24 +80,24 @@ int getParentBodyIndex()
 	return res;
 }
 
-void DrawBody(Body& body)
+void DrawBody(Body &body)
 {
-    auto pos = body.getDisplayPosition(FloatingOrigin);
+	auto pos = body.getDisplayPosition(FloatingOrigin);
 	if (graphicsDebugger.showWireframe)
 		DrawSphereWires(pos, body.getEffectiveRadius(), 16, 16, body.color);
 	else
 		DrawSphereEx(pos, body.getEffectiveRadius(), 16, 16, body.color);
 
-	if(!body.isPlanet)
+	if (!body.isPlanet)
 	{
-		Body* currentFocus = &bodies[focusIndex];
+		Body *currentFocus = &bodies[focusIndex];
 		bool found = currentFocus->name == body.name;
 
 		// If the current focus is not a planet, set the focus to the parent body
-		if(!currentFocus->isPlanet)
+		if (!currentFocus->isPlanet)
 		{
 			int parentIndex = getParentBodyIndex();
-			if(parentIndex != -1)
+			if (parentIndex != -1)
 			{
 				currentFocus = &bodies[parentIndex];
 			}
@@ -124,19 +120,17 @@ void DrawBody(Body& body)
 		}
 	}
 
-
 	for (size_t i = 1; i < body.trailCount(); i++)
 	{
 		auto startPos = realignVector(body.trail[i - 1]);
 		auto endPos = realignVector(body.trail[i]);
-
 
 		DrawLine3D(startPos, endPos, body.color);
 	}
 
 	DrawLine3D(realignVector(body.trail[body.trailCount() - 1]), pos, body.color);
 
-	if(!body.isPlanet and graphicsDebugger.showSelector)
+	if (!body.isPlanet and graphicsDebugger.showSelector)
 	{
 		Color selectorColor = body.color;
 		selectorColor.a = 100;
@@ -144,7 +138,7 @@ void DrawBody(Body& body)
 	}
 }
 
-void BodyDebuggerUI(Body& body)
+void BodyDebuggerUI(Body &body)
 {
 
 	std::string windowName = "Body Debugger: " + body.name;
@@ -157,12 +151,12 @@ void BodyDebuggerUI(Body& body)
 		ImGui::Text("Position: x: %f, y: %f, z: %f", body.position.x, body.position.y, body.position.z);
 		ImGui::Text("Velocity: x: %f, y: %f, z: %f", body.velocity.x, body.velocity.y, body.velocity.z);
 
-		ImGui::BeginChild("Trail", { 300, 300 });
+		ImGui::BeginChild("Trail", {300, 300});
 
 		for (size_t i = 0; i < body.trailCount(); i++)
 		{
-			//Vector3& point = body.trail[i];
-			//ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
+			// Vector3& point = body.trail[i];
+			// ImGui::Text("%zu: x: %f, y: %f, z: %f", i, point.x, point.y, point.z);
 		}
 
 		ImGui::EndChild();
@@ -170,11 +164,10 @@ void BodyDebuggerUI(Body& body)
 	ImGui::End();
 }
 
-
 bool testRayHit(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, float sphereRadius)
 {
 	// 1. Vector from camera position to sphere center
-	Vector3 oc = { spherePos.x - cameraPos.x, spherePos.y - cameraPos.y, spherePos.z - cameraPos.z };
+	Vector3 oc = {spherePos.x - cameraPos.x, spherePos.y - cameraPos.y, spherePos.z - cameraPos.z};
 
 	// 2. Calculate projections
 	float ocSq = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z;
@@ -200,7 +193,7 @@ bool testRayHit(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, float s
 float distanceToSphere(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, float sphereRadius)
 {
 	// 1. Vector from camera position to sphere center
-	Vector3 oc = { spherePos.x - cameraPos.x, spherePos.y - cameraPos.y, spherePos.z - cameraPos.z };
+	Vector3 oc = {spherePos.x - cameraPos.x, spherePos.y - cameraPos.y, spherePos.z - cameraPos.z};
 
 	// 2. Calculate projections and distance to sphere center
 	float ocSq = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z;
@@ -234,13 +227,11 @@ float distanceToSphere(Vector3 cameraPos, Vector3 cameraDir, Vector3 spherePos, 
 		Vector3 intersectionPoint = {
 			cameraPos.x + t * cameraDir.x,
 			cameraPos.y + t * cameraDir.y,
-			cameraPos.z + t * cameraDir.z
-		};
+			cameraPos.z + t * cameraDir.z};
 		float distance = std::sqrt(
 			(intersectionPoint.x - cameraPos.x) * (intersectionPoint.x - cameraPos.x) +
-				(intersectionPoint.y - cameraPos.y) * (intersectionPoint.y - cameraPos.y) +
-				(intersectionPoint.z - cameraPos.z) * (intersectionPoint.z - cameraPos.z)
-		);
+			(intersectionPoint.y - cameraPos.y) * (intersectionPoint.y - cameraPos.y) +
+			(intersectionPoint.z - cameraPos.z) * (intersectionPoint.z - cameraPos.z));
 
 		return distance;
 	}
@@ -252,10 +243,10 @@ struct bodySettings
 	float orbitHeight = 0.0f;
 	float radius = 1.0f;
 	float mass = 1.0f;
-	ImVec4 color = { 1, 1, 1, 1 };
+	ImVec4 color = {1, 1, 1, 1};
 };
 
-//void NewBodyDebuggerUI()
+// void NewBodyDebuggerUI()
 //{
 //
 //	ImGui::SetNextWindowSize({ 300, 180 });
@@ -282,7 +273,7 @@ struct bodySettings
 //		bodies.push_back(newBody);
 //	}
 //	ImGui::End();
-//}
+// }
 
 void CameraSettingsDebuggerUI()
 {
@@ -292,7 +283,7 @@ void CameraSettingsDebuggerUI()
 		if (ImGui::RadioButton("Orbital", &cameraSettings.cameraMode, CAMERA_ORBITAL))
 		{
 			cameraSettings.cameraMode = CAMERA_ORBITAL;
-			cameraSettings.camera.target = { 0.0f, 0.0f, 0.0f };
+			cameraSettings.camera.target = {0.0f, 0.0f, 0.0f};
 		}
 
 		if (ImGui::RadioButton("First Person", &cameraSettings.cameraMode, CAMERA_FIRST_PERSON))
@@ -312,7 +303,6 @@ void CameraSettingsDebuggerUI()
 		ImGui::SliderFloat("Fovy", &cameraSettings.camera.fovy, 30.0f, 90.0f);
 
 		ImGui::End();
-
 	}
 	ImGui::End();
 }
@@ -342,30 +332,30 @@ void SimulationSettingsDebuggerUI()
 	{
 		ImGui::Text("Seconds per sim-tick");
 
-		if(ImGui::Button("-100", { 40, 0 }))
+		if (ImGui::Button("-100", {40, 0}))
 			simulationSettings.timeStep -= 100.0f;
 
 		ImGui::SameLine();
-		if(ImGui::Button("-10", { 40, 0 }))
+		if (ImGui::Button("-10", {40, 0}))
 			simulationSettings.timeStep -= 10.0f;
 
 		ImGui::SameLine();
-		if(ImGui::Button("-1", { 40, 0 }))
+		if (ImGui::Button("-1", {40, 0}))
 			simulationSettings.timeStep -= 1.0f;
 
 		ImGui::SameLine();
 		ImGui::Text("%d", simulationSettings.timeStep);
 
 		ImGui::SameLine();
-		if(ImGui::Button("+1", { 40, 0 }))
+		if (ImGui::Button("+1", {40, 0}))
 			simulationSettings.timeStep += 1.0f;
 
 		ImGui::SameLine();
-		if(ImGui::Button("+10", { 40, 0 }))
+		if (ImGui::Button("+10", {40, 0}))
 			simulationSettings.timeStep += 10.0f;
 
 		ImGui::SameLine();
-		if(ImGui::Button("+100", { 40, 0 }))
+		if (ImGui::Button("+100", {40, 0}))
 			simulationSettings.timeStep += 100.0f;
 
 		ImGui::Checkbox("Paused", &simulationSettings.paused);
@@ -375,8 +365,7 @@ void SimulationSettingsDebuggerUI()
 		ImGui::Text("Hours passed in Simulation: %lld", performanceStats.secondsPassed / 3600);
 		ImGui::Text("Days passed in Simulation: %lld", performanceStats.secondsPassed / 86400);
 
-
-		ImGui::PushStyleColor(ImGuiCol_Text, simulationSettings.paused ? IM_COL32(255, 0, 0, 255) :IM_COL32(0, 255, 0, 255));
+		ImGui::PushStyleColor(ImGuiCol_Text, simulationSettings.paused ? IM_COL32(255, 0, 0, 255) : IM_COL32(0, 255, 0, 255));
 
 		ImGui::Text(simulationSettings.paused ? "Simulation Paused" : "Simulation Running");
 		ImGui::PopStyleColor();
@@ -398,45 +387,43 @@ void simulate()
 			{
 				for (int j = 0; j < bodies.size(); j++)
 				{
-                    Body& body = bodies[i];
-                    Body& body2 = bodies[j];
+					Body &body = bodies[i];
+					Body &body2 = bodies[j];
 					if (&body != &body2)
 					{
-                        SciVec3 direction = body2.position - body.position;
+						SciVec3 direction = body2.position - body.position;
 
 						double distance = direction.length();
 
-                        double forceMagnitude = GRAV_CONST * ((body.mass * body2.mass) / (distance * distance));
+						double forceMagnitude = GRAV_CONST * ((body.mass * body2.mass) / (distance * distance));
 
 						if (isinf(forceMagnitude) || isnan(forceMagnitude))
 							TraceLog(LOG_ERROR, "Force magnitude is inf or nan");
 
-                        SciVec3 forceDirection = direction.normalized();
-                        SciVec3 force = forceDirection * forceMagnitude;
+						SciVec3 forceDirection = direction.normalized();
+						SciVec3 force = forceDirection * forceMagnitude;
 
 						SciVec3 acceleration = force / body.mass;
 
-                        body.velocity += acceleration * simulationSettings.timeStep;
+						body.velocity += acceleration * simulationSettings.timeStep;
 					}
 				}
 			}
 
-            for (Body& body : bodies)
-            {
-                body.position += body.velocity * simulationSettings.timeStep;
+			for (Body &body : bodies)
+			{
+				body.position += body.velocity * simulationSettings.timeStep;
 
 				int stepSize = body.isPlanet ? PLANET_TRAIL_STEP : SATELLITE_TRAIL_STEP;
 
-				if(performanceStats.secondsPassed % stepSize <= TIME_STEP)
+				if (performanceStats.secondsPassed % stepSize <= TIME_STEP)
 				{
 					body.appendTrail(body.position);
 				}
-
-            }
+			}
 
 			performanceStats.secondsPassed += simulationSettings.timeStep;
 		}
-
 	}
 }
 
@@ -456,7 +443,95 @@ void FocusSelectDebugUI()
 	ImGui::End();
 }
 
+void draw()
+{
+	BeginDrawing();
+	rlImGuiBegin();
+	ClearBackground(BLACK);
+	rlSetClipPlanes(0.01f, cameraSettings.coord.r * 2.0f);
 
+	const char *text = "Planet Sim";
+	const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
+
+	DrawText(text,
+			 GetScreenWidth() / 2 - text_size.x / 2,
+			 30,
+			 20,
+			 RAYWHITE);
+
+	std::string focusText = "Current Focus: " + bodies[focusIndex].name;
+	const Vector2 focusTextSize = MeasureTextEx(GetFontDefault(), focusText.c_str(), 20, 1);
+
+	DrawText(focusText.c_str(),
+			 GetScreenWidth() / 2 - focusTextSize.x / 2,
+			 50,
+			 20,
+			 RAYWHITE);
+
+	BeginMode3D(cameraSettings.camera);
+
+	if (graphicsDebugger.showGrid)
+		DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 100.f);
+
+	simulationSettings.paused = true;
+
+	FloatingOrigin = bodies[focusIndex].position;
+	for (Body &body : bodies)
+		DrawBody(body);
+
+	cameraSettings.update();
+
+	simulationSettings.paused = false;
+
+	if (IsMouseButtonPressed(0))
+	{
+		auto pos = GetMouseRay(GetMousePosition(), cameraSettings.camera);
+		// TraceLog(LOG_INFO, "Mouse ray POS: %f, %f, %f", pos.position.x, pos.position.y, pos.position.z);
+		// TraceLog(LOG_INFO, "Mouse ray DIR: %f, %f, %f", pos.direction.x, pos.direction.y, pos.direction.z);
+
+		std::vector<std::tuple<Body, float>> hitBodies;
+		for (Body &body : bodies)
+		{
+			float radius = body.getEffectiveRadius();
+			if (!body.isPlanet)
+				radius *= 10;
+
+			auto bodyPos = body.getDisplayPosition(FloatingOrigin);
+			if (testRayHit(pos.position, pos.direction, bodyPos, radius))
+			{
+				float dist = distanceToSphere(pos.position, pos.direction, bodyPos, radius);
+				if (isnan(dist) || isinf(dist))
+					continue;
+
+				hitBodies.emplace_back(body, dist);
+			}
+		}
+
+		for (auto &[body, dist] : hitBodies)
+		{
+			TraceLog(LOG_INFO, "Hit body: %s, distance: %f", body.name.c_str(), dist);
+
+			for (int i = 0; i < bodies.size(); i++)
+			{
+				if (bodies[i].name == body.name)
+				{
+					focusIndex = i;
+					break;
+				}
+			}
+		}
+	}
+
+	EndMode3D();
+	// GraphicsDebuggerUI();
+	// NewBodyDebuggerUI();
+	// CameraSettingsDebuggerUI();
+	SimulationSettingsDebuggerUI();
+	FocusSelectDebugUI();
+
+	rlImGuiEnd();
+	EndDrawing();
+}
 
 int main(void)
 {
@@ -479,108 +554,8 @@ int main(void)
 
 	while (!WindowShouldClose())
 	{
-		BeginDrawing();
-		rlImGuiBegin();
-		ClearBackground(BLACK);
-		rlSetClipPlanes(0.01f, cameraSettings.coord.r * 2.0f);
-
-		const char* text = "Planet Sim";
-		const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
-
-
-		DrawText(text,
-			GetScreenWidth() / 2 - text_size.x / 2,
-			30,
-			20,
-			RAYWHITE
-		);
-
-		std::string focusText = "Current Focus: " + bodies[focusIndex].name;
-		const Vector2 focusTextSize = MeasureTextEx(GetFontDefault(), focusText.c_str(), 20, 1);
-
-		DrawText(focusText.c_str(),
-			GetScreenWidth() / 2 - focusTextSize.x / 2,
-			50,
-			20,
-			RAYWHITE
-		);
-
-		BeginMode3D(cameraSettings.camera);
-
-		if (graphicsDebugger.showGrid)
-			DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 100.f);
-
-
-
-
-		simulationSettings.paused = true;
-
-		FloatingOrigin = bodies[focusIndex].position;
-		for (Body& body : bodies)
-			DrawBody(body);
-
-		cameraSettings.update();
-
-		simulationSettings.paused = false;
-
-
-
-		if (IsMouseButtonPressed(0))
-		{
-			auto pos = GetMouseRay(GetMousePosition(), cameraSettings.camera);
-			//TraceLog(LOG_INFO, "Mouse ray POS: %f, %f, %f", pos.position.x, pos.position.y, pos.position.z);
-			//TraceLog(LOG_INFO, "Mouse ray DIR: %f, %f, %f", pos.direction.x, pos.direction.y, pos.direction.z);
-
-			std::vector<std::tuple<Body, float>> hitBodies;
-			for (Body& body : bodies)
-			{
-				float radius = body.getEffectiveRadius();
-				if(!body.isPlanet)
-					radius *= 10;
-
-				auto bodyPos = body.getDisplayPosition(FloatingOrigin);
-				if (testRayHit(pos.position, pos.direction, bodyPos, radius))
-				{
-					float dist = distanceToSphere(pos.position, pos.direction, bodyPos, radius);
-					if(isnan(dist) || isinf(dist))
-						continue;
-
-					hitBodies.emplace_back(body, dist);
-				}
-			}
-
-
-			for (auto& [body, dist] : hitBodies)
-			{
-				TraceLog(LOG_INFO, "Hit body: %s, distance: %f", body.name.c_str(), dist);
-
-				for(int i = 0; i < bodies.size(); i++)
-				{
-					if(bodies[i].name == body.name)
-					{
-						focusIndex = i;
-						break;
-					}
-				}
-			}
-		}
-
-
-
-
-
-		EndMode3D();
-		//GraphicsDebuggerUI();
-		//NewBodyDebuggerUI();
-		//CameraSettingsDebuggerUI();
-		SimulationSettingsDebuggerUI();
-		FocusSelectDebugUI();
-
-		rlImGuiEnd();
-		EndDrawing();
+		draw();
 	}
-
-
 
 	simRunning = false;
 	simThread.join();
@@ -590,5 +565,3 @@ int main(void)
 
 	return 0;
 }
-
-
