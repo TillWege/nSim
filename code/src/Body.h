@@ -28,7 +28,6 @@ struct Body
 
 	std::vector<SciVec3> trail;
 	size_t trailLength = 0;
-	size_t lastTrailDelta = 0;
 
 	explicit Body (bool isPlanet)
 	{

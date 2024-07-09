@@ -471,7 +471,7 @@ void draw()
 	BeginMode3D(cameraSettings.camera);
 
 	if (graphicsDebugger.showGrid)
-		DrawGrid(graphicsDebugger.gridSize, cameraSettings.zoom * 100.f);
+		DrawGrid(graphicsDebugger.gridSize, (AU / UNIT_SIZE) / 100.f);
 
 	simulationSettings.paused = true;
 
@@ -523,9 +523,9 @@ void draw()
 	}
 
 	EndMode3D();
-	// GraphicsDebuggerUI();
+	GraphicsDebuggerUI();
 	// NewBodyDebuggerUI();
-	// CameraSettingsDebuggerUI();
+	CameraSettingsDebuggerUI();
 	SimulationSettingsDebuggerUI();
 	FocusSelectDebugUI();
 

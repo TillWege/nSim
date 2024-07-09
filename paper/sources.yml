@@ -63,3 +63,10 @@ cmake:
   type: web
   url: https://cmake.org/
   date: 2024-07-08
+
+clipplane:
+  title: ClipPlane
+  type: web
+  url: https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glClipPlane.xml
+  date: 2024-07-08
+  author: Khronos Group
